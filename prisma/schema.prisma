@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  passwordHash   String
+  name           String
+  languageLevels String   @default("{}") // JSON string: {"ja": "intermediate", "en": "advanced"}
+  createdAt      DateTime @default(now())
+
+  scripts    Script[]
+  vocabulary Vocabulary[]
+}
+
+model Script {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  url            String
+  title          String   @default("")
+  sourceLanguage String
+  targetLanguage String
+  status         String   @default("processing") // processing | completed | failed
+  createdAt      DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  segments   Segment[]
+  vocabulary Vocabulary[]
+}
+
+model Segment {
+  id             Int    @id @default(autoincrement())
+  scriptId       Int
+  startTime      Float
+  endTime        Float
+  originalText   String
+  translatedText String @default("")
+  position       Int
+
+  script Script @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+}
+
+model Vocabulary {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  scriptId  Int?
+  word      String
+  reading   String   @default("") // 후리가나, 병음 등
+  meaning   String
+  example   String   @default("")
+  language  String
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id])
+  script Script? @relation(fields: [scriptId], references: [id])
+}

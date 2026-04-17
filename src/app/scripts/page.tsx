@@ -191,53 +191,62 @@ export default function ScriptsPage() {
               text: script.status,
               color: "text-gray-600",
             };
-            return (
-              <div
-                key={script.id}
-                className="bg-white p-4 rounded-lg shadow-sm border hover:border-blue-300 transition"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    {script.status === "completed" ? (
-                      <Link
-                        href={`/scripts/${script.id}`}
-                        className="text-lg font-medium text-blue-600 hover:underline"
-                      >
-                        {script.title || "제목 없음"}
-                      </Link>
-                    ) : (
-                      <span className="text-lg font-medium text-gray-700">
-                        {script.title || "제목 없음"}
-                      </span>
-                    )}
-                    <div className="text-sm text-gray-500 mt-1">
-                      {langName(script.sourceLanguage)} →{" "}
-                      {langName(script.targetLanguage)} |{" "}
-                      {new Date(script.createdAt).toLocaleDateString("ko-KR")}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${status.color}`}>
-                      {status.text}
-                    </span>
-                    {script.status === "failed" && (
-                      <>
-                        <button
-                          onClick={() => handleRetry(script.id)}
-                          className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        >
-                          재시도
-                        </button>
-                        <button
-                          onClick={() => handleDelete(script.id)}
-                          className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
-                        >
-                          삭제
-                        </button>
-                      </>
-                    )}
+            const card = (
+              <div className="flex items-center justify-between">
+                <div>
+                  <span
+                    className={`text-lg font-medium ${
+                      script.status === "completed"
+                        ? "text-blue-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {script.title || "제목 없음"}
+                  </span>
+                  <div className="text-sm text-gray-500 mt-1">
+                    {langName(script.sourceLanguage)} →{" "}
+                    {langName(script.targetLanguage)} |{" "}
+                    {new Date(script.createdAt).toLocaleDateString("ko-KR")}
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium ${status.color}`}>
+                    {status.text}
+                  </span>
+                  {script.status === "failed" && (
+                    <>
+                      <button
+                        onClick={() => handleRetry(script.id)}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        재시도
+                      </button>
+                      <button
+                        onClick={() => handleDelete(script.id)}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                      >
+                        삭제
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+
+            return script.status === "completed" ? (
+              <Link
+                key={script.id}
+                href={`/scripts/${script.id}`}
+                className="block bg-white p-4 rounded-lg shadow-sm border hover:border-blue-300 transition cursor-pointer"
+              >
+                {card}
+              </Link>
+            ) : (
+              <div
+                key={script.id}
+                className="bg-white p-4 rounded-lg shadow-sm border"
+              >
+                {card}
               </div>
             );
           })}

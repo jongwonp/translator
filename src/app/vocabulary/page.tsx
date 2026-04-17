@@ -26,6 +26,7 @@ export default function VocabularyPage() {
   const [language, setLanguage] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const limit = 30;
 
   const fetchWords = async () => {
@@ -45,18 +46,77 @@ export default function VocabularyPage() {
 
   useEffect(() => {
     fetchWords();
+    setSelectedIds(new Set());
   }, [language, page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
+    setSelectedIds(new Set());
     fetchWords();
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("이 단어를 삭제하시겠습니까?")) return;
-    const res = await fetch(`/api/vocabulary/${id}`, { method: "DELETE" });
-    if (res.ok) fetchWords();
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === words.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(words.map((w) => w.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`선택한 ${selectedIds.size}개 단어를 삭제하시겠습니까?`)) return;
+
+    const res = await fetch("/api/vocabulary", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: Array.from(selectedIds) }),
+    });
+    if (res.ok) {
+      setSelectedIds(new Set());
+      fetchWords();
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (total === 0) return;
+    const target = language
+      ? LANGUAGES.find((l) => l.code === language)?.name || language
+      : "전체";
+    if (!confirm(`${target} 단어 ${total}개를 모두 삭제하시겠습니까?`)) return;
+
+    // 전체 ID를 가져와서 삭제
+    const params = new URLSearchParams();
+    if (language) params.set("language", language);
+    if (search) params.set("search", search);
+    params.set("page", "1");
+    params.set("limit", total.toString());
+
+    const listRes = await fetch(`/api/vocabulary?${params}`);
+    if (!listRes.ok) return;
+    const data = await listRes.json();
+    const allIds = data.words.map((w: VocabWord) => w.id);
+
+    const res = await fetch("/api/vocabulary", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: allIds }),
+    });
+    if (res.ok) {
+      setSelectedIds(new Set());
+      setPage(1);
+      fetchWords();
+    }
   };
 
   const handleExport = () => {
@@ -65,6 +125,7 @@ export default function VocabularyPage() {
   };
 
   const totalPages = Math.ceil(total / limit);
+  const isAllSelected = words.length > 0 && selectedIds.size === words.length;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -115,8 +176,40 @@ export default function VocabularyPage() {
         </form>
       </div>
 
-      {/* 단어 목록 */}
-      <div className="text-sm text-gray-500 mb-3">총 {total}개 단어</div>
+      {/* 단어 목록 헤더 */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">총 {total}개 단어</span>
+          {words.length > 0 && (
+            <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={toggleSelectAll}
+              />
+              전체 선택
+            </label>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <button
+              onClick={handleDeleteSelected}
+              className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+            >
+              선택 삭제 ({selectedIds.size})
+            </button>
+          )}
+          {total > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              className="px-3 py-1.5 bg-gray-100 text-red-600 rounded-md text-sm hover:bg-red-50"
+            >
+              전부 삭제
+            </button>
+          )}
+        </div>
+      </div>
 
       {words.length === 0 ? (
         <p className="text-gray-500 text-center py-12">
@@ -127,9 +220,21 @@ export default function VocabularyPage() {
           {words.map((word) => (
             <div
               key={word.id}
-              className="bg-white p-4 rounded-lg shadow-sm border flex items-start justify-between"
+              onClick={() => toggleSelect(word.id)}
+              className={`bg-white p-4 rounded-lg shadow-sm border flex items-start gap-3 cursor-pointer transition ${
+                selectedIds.has(word.id)
+                  ? "border-blue-400 bg-blue-50"
+                  : "hover:border-gray-300"
+              }`}
             >
-              <div>
+              <input
+                type="checkbox"
+                checked={selectedIds.has(word.id)}
+                onChange={() => toggleSelect(word.id)}
+                onClick={(e) => e.stopPropagation()}
+                className="mt-1.5"
+              />
+              <div className="flex-1">
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold">{word.word}</span>
                   {word.reading && (
@@ -148,12 +253,6 @@ export default function VocabularyPage() {
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => handleDelete(word.id)}
-                className="text-gray-400 hover:text-red-500 text-sm ml-4"
-              >
-                삭제
-              </button>
             </div>
           ))}
         </div>

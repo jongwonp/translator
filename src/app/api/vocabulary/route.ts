@@ -51,6 +51,32 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// DELETE /api/vocabulary - 다중 삭제
+export async function DELETE(request: NextRequest) {
+  const auth = await getAuthUser();
+  if (!auth) {
+    return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
+  }
+
+  const { ids } = await request.json();
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return NextResponse.json(
+      { error: "삭제할 단어를 선택해주세요." },
+      { status: 400 }
+    );
+  }
+
+  await prisma.vocabulary.deleteMany({
+    where: {
+      id: { in: ids },
+      userId: auth.userId,
+    },
+  });
+
+  return new NextResponse(null, { status: 204 });
+}
+
 // GET /api/vocabulary - 단어장 조회
 export async function GET(request: NextRequest) {
   const auth = await getAuthUser();

@@ -30,7 +30,7 @@ export async function POST(
 
   try {
     const body = await request.json();
-    const { segmentIds, level = "intermediate" } = body;
+    const { segmentIds } = body;
 
     // Filter segments if specific IDs provided
     const targetSegments = segmentIds
@@ -54,7 +54,6 @@ export async function POST(
     const words = await extractWords(
       targetSegments.map((s) => ({ id: s.id, originalText: s.originalText })),
       script.sourceLanguage,
-      level,
       existingWords
     );
 

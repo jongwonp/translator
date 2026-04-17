@@ -28,7 +28,27 @@ interface ExtractedWord {
   meaning: string;
   example: string;
   segmentId: number;
+  difficulty: string;
 }
+
+// 난이도 필터링 기준: level 이상의 단어만 표시
+const DIFFICULTY_FILTER: Record<string, Record<string, string[]>> = {
+  ja: {
+    beginner: ["N5", "N4", "N3", "N2", "N1"],
+    intermediate: ["N3", "N2", "N1"],
+    advanced: ["N1"],
+  },
+  en: {
+    beginner: ["A1", "A2", "B1", "B2", "C1", "C2"],
+    intermediate: ["B1", "B2", "C1", "C2"],
+    advanced: ["C1", "C2"],
+  },
+  zh: {
+    beginner: ["1급", "2급", "3급", "4급", "5급", "6급"],
+    intermediate: ["3급", "4급", "5급", "6급"],
+    advanced: ["5급", "6급"],
+  },
+};
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -158,13 +178,12 @@ export default function ScriptDetailPage() {
       const res = await fetch(`/api/scripts/${scriptId}/extract-words`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ level }),
+        body: JSON.stringify({}),
       });
       if (res.ok) {
         const data = await res.json();
         setExtractedWords(data.words);
         setShowWords(true);
-        setSelectedWords(new Set(data.words.map((_: ExtractedWord, i: number) => i)));
       }
     } catch (error) {
       console.error("Word extraction failed:", error);
@@ -172,6 +191,14 @@ export default function ScriptDetailPage() {
       setExtracting(false);
     }
   };
+
+  // 레벨에 따라 프론트에서 필터링
+  const filteredWords = extractedWords.filter((w) => {
+    const allowed =
+      DIFFICULTY_FILTER[script?.sourceLanguage || ""]?.[level];
+    if (!allowed) return true;
+    return allowed.some((d) => w.difficulty.toUpperCase().includes(d.toUpperCase()));
+  });
 
   const toggleWord = (index: number) => {
     setSelectedWords((prev) => {
@@ -250,7 +277,10 @@ export default function ScriptDetailPage() {
             <div className="flex items-center gap-3 mb-3">
               <select
                 value={level}
-                onChange={(e) => setLevel(e.target.value)}
+                onChange={(e) => {
+                  setLevel(e.target.value);
+                  setSelectedWords(new Set());
+                }}
                 className="px-3 py-1.5 border rounded-md text-sm"
               >
                 <option value="beginner">초급</option>
@@ -266,38 +296,47 @@ export default function ScriptDetailPage() {
               </button>
             </div>
 
-            {showWords && extractedWords.length > 0 && (
+            {showWords && filteredWords.length > 0 && (
               <div>
+                <p className="text-xs text-gray-400 mb-2">
+                  전체 {extractedWords.length}개 중 {filteredWords.length}개 표시
+                </p>
                 <div className="max-h-60 overflow-y-auto space-y-2 mb-3">
-                  {extractedWords.map((word, i) => (
-                    <label
-                      key={i}
-                      className="flex items-start gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedWords.has(i)}
-                        onChange={() => toggleWord(i)}
-                        className="mt-1"
-                      />
-                      <div className="text-sm">
-                        <span className="font-bold">{word.word}</span>
-                        {word.reading && (
-                          <span className="text-gray-500 ml-1">
-                            ({word.reading})
+                  {filteredWords.map((word) => {
+                    const originalIndex = extractedWords.indexOf(word);
+                    return (
+                      <label
+                        key={originalIndex}
+                        className="flex items-start gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedWords.has(originalIndex)}
+                          onChange={() => toggleWord(originalIndex)}
+                          className="mt-1"
+                        />
+                        <div className="text-sm">
+                          <span className="font-bold">{word.word}</span>
+                          {word.reading && (
+                            <span className="text-gray-500 ml-1">
+                              ({word.reading})
+                            </span>
+                          )}
+                          <span className="text-gray-700 ml-2">
+                            {word.meaning}
                           </span>
-                        )}
-                        <span className="text-gray-700 ml-2">
-                          {word.meaning}
-                        </span>
-                        {word.example && (
-                          <p className="text-gray-400 text-xs mt-0.5">
-                            {word.example}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  ))}
+                          <span className="text-xs text-gray-400 ml-1">
+                            [{word.difficulty}]
+                          </span>
+                          {word.example && (
+                            <p className="text-gray-400 text-xs mt-0.5">
+                              {word.example}
+                            </p>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
                 <button
                   onClick={handleSaveWords}
@@ -311,9 +350,11 @@ export default function ScriptDetailPage() {
               </div>
             )}
 
-            {showWords && extractedWords.length === 0 && !extracting && (
+            {showWords && filteredWords.length === 0 && !extracting && (
               <p className="text-sm text-gray-500">
-                추출할 새로운 단어가 없습니다.
+                {extractedWords.length > 0
+                  ? "현재 레벨에 해당하는 단어가 없습니다. 레벨을 변경해보세요."
+                  : "추출할 새로운 단어가 없습니다."}
               </p>
             )}
           </div>

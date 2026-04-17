@@ -61,6 +61,7 @@ export default function ScriptDetailPage() {
   const [showWords, setShowWords] = useState(false);
   const [level, setLevel] = useState("intermediate");
   const [followScript, setFollowScript] = useState(true);
+  const [viewMode, setViewMode] = useState<"timeline" | "full">("timeline");
 
   const playerRef = useRef<YT.Player | null>(null);
   const playerReadyRef = useRef(false);
@@ -321,41 +322,85 @@ export default function ScriptDetailPage() {
         {/* 스크립트 패널 */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-            <h2 className="font-bold">스크립트</h2>
-            <button
-              onClick={() => setFollowScript((prev) => !prev)}
-              className={`px-3 py-1 text-sm rounded-md ${
-                followScript
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
-            >
-              자동 스크롤 {followScript ? "ON" : "OFF"}
-            </button>
-          </div>
-          <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-            {script.segments.map((seg) => (
-              <div
-                key={seg.id}
-                ref={(el) => {
-                  if (el) segmentRefs.current.set(seg.id, el);
-                }}
-                onClick={() => seekTo(seg.startTime)}
-                className={`p-3 border-b cursor-pointer hover:bg-blue-50 transition ${
-                  activeSegment === seg.id ? "bg-blue-100 border-l-4 border-l-blue-500" : ""
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold">스크립트</h2>
+              <div className="flex text-sm">
+                <button
+                  onClick={() => setViewMode("timeline")}
+                  className={`px-2 py-0.5 rounded-l-md border ${
+                    viewMode === "timeline"
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  타임라인
+                </button>
+                <button
+                  onClick={() => setViewMode("full")}
+                  className={`px-2 py-0.5 rounded-r-md border-t border-r border-b ${
+                    viewMode === "full"
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  전체보기
+                </button>
+              </div>
+            </div>
+            {viewMode === "timeline" && (
+              <button
+                onClick={() => setFollowScript((prev) => !prev)}
+                className={`px-3 py-1 text-sm rounded-md ${
+                  followScript
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                 }`}
               >
-                <span className="text-xs text-gray-400 font-mono">
-                  {formatTime(seg.startTime)}
-                </span>
-                <p className="text-sm mt-1">{seg.originalText}</p>
-                {seg.translatedText && (
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {seg.translatedText}
+                자동 스크롤 {followScript ? "ON" : "OFF"}
+              </button>
+            )}
+          </div>
+          <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+            {viewMode === "timeline" ? (
+              script.segments.map((seg) => (
+                <div
+                  key={seg.id}
+                  ref={(el) => {
+                    if (el) segmentRefs.current.set(seg.id, el);
+                  }}
+                  onClick={() => seekTo(seg.startTime)}
+                  className={`p-3 border-b cursor-pointer hover:bg-blue-50 transition ${
+                    activeSegment === seg.id ? "bg-blue-100 border-l-4 border-l-blue-500" : ""
+                  }`}
+                >
+                  <span className="text-xs text-gray-400 font-mono">
+                    {formatTime(seg.startTime)}
+                  </span>
+                  <p className="text-sm mt-1">{seg.originalText}</p>
+                  {seg.translatedText && (
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {seg.translatedText}
+                    </p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="p-4 space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-400 mb-2">원문</h3>
+                  <p className="text-sm leading-relaxed">
+                    {script.segments.map((seg) => seg.originalText).join(" ")}
                   </p>
-                )}
+                </div>
+                <hr />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-400 mb-2">번역</h3>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    {script.segments.map((seg) => seg.translatedText).join(" ")}
+                  </p>
+                </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

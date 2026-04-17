@@ -444,7 +444,7 @@ export default function ScriptDetailPage() {
                 </button>
               </div>
             </div>
-            {viewMode === "timeline" && (
+            {viewMode === "timeline" && ytId && (
               <button
                 onClick={() => setFollowScript((prev) => !prev)}
                 className={`px-3 py-1 text-sm rounded-md ${
@@ -455,6 +455,11 @@ export default function ScriptDetailPage() {
               >
                 자동 스크롤 {followScript ? "ON" : "OFF"}
               </button>
+            )}
+            {viewMode === "timeline" && biliId && (
+              <span className="text-xs text-gray-400">
+                빌리빌리 영상은 자동 스크롤을 지원하지 않습니다
+              </span>
             )}
           </div>
           <div className="max-h-[calc(100vh-200px)] overflow-y-auto">

@@ -19,6 +19,7 @@ interface Script {
   sourceLanguage: string;
   targetLanguage: string;
   status: string;
+  transcriptionModel: string;
   segments: Segment[];
 }
 
@@ -96,6 +97,13 @@ export default function ScriptDetailPage() {
       .catch(console.error);
   }, [scriptId]);
 
+  // 타임라인 미지원 모델은 viewMode를 full로 강제
+  useEffect(() => {
+    if (script && script.transcriptionModel !== "whisper-1") {
+      setViewMode("full");
+    }
+  }, [script]);
+
   // 이전에 추출한 단어 복원
   useEffect(() => {
     const saved = localStorage.getItem(`extracted-words-${scriptId}`);
@@ -147,7 +155,12 @@ export default function ScriptDetailPage() {
       window.onYouTubeIframeAPIReady = loadPlayer;
     }
 
-    return () => stopTimeTracking();
+    return () => {
+      stopTimeTracking();
+      playerRef.current?.destroy?.();
+      playerRef.current = null;
+      playerReadyRef.current = false;
+    };
   }, [script]);
 
   const followRef = useRef(followScript);
@@ -421,28 +434,30 @@ export default function ScriptDetailPage() {
           <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="font-bold">스크립트</h2>
-              <div className="flex text-sm">
-                <button
-                  onClick={() => setViewMode("timeline")}
-                  className={`px-2 py-0.5 rounded-l-md border ${
-                    viewMode === "timeline"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                  }`}
-                >
-                  타임라인
-                </button>
-                <button
-                  onClick={() => setViewMode("full")}
-                  className={`px-2 py-0.5 rounded-r-md border-t border-r border-b ${
-                    viewMode === "full"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                  }`}
-                >
-                  전체보기
-                </button>
-              </div>
+              {script.transcriptionModel === "whisper-1" && (
+                <div className="flex text-sm">
+                  <button
+                    onClick={() => setViewMode("timeline")}
+                    className={`px-2 py-0.5 rounded-l-md border ${
+                      viewMode === "timeline"
+                        ? "bg-gray-700 text-white border-gray-700"
+                        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    타임라인
+                  </button>
+                  <button
+                    onClick={() => setViewMode("full")}
+                    className={`px-2 py-0.5 rounded-r-md border-t border-r border-b ${
+                      viewMode === "full"
+                        ? "bg-gray-700 text-white border-gray-700"
+                        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    전체보기
+                  </button>
+                </div>
+              )}
             </div>
             {viewMode === "timeline" && ytId && (
               <button

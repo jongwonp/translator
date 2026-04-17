@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { url, sourceLanguage, targetLanguage } = await request.json();
+    const { url, sourceLanguage, targetLanguage, transcriptionModel } =
+      await request.json();
 
     if (!url || !sourceLanguage || !targetLanguage) {
       return NextResponse.json(
@@ -20,6 +21,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const model =
+      transcriptionModel === "gpt-4o-transcribe"
+        ? "gpt-4o-transcribe"
+        : "whisper-1";
 
     // 1. 영상 정보 가져오기
     const videoInfo = await getVideoInfo(url);
@@ -33,6 +39,7 @@ export async function POST(request: NextRequest) {
         sourceLanguage,
         targetLanguage,
         status: "processing",
+        transcriptionModel: model,
       },
     });
 

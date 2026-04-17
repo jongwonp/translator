@@ -36,6 +36,7 @@ export default function ScriptsPage() {
   const [url, setUrl] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("ja");
   const [targetLanguage, setTargetLanguage] = useState("ko");
+  const [transcriptionModel, setTranscriptionModel] = useState("whisper-1");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -96,7 +97,12 @@ export default function ScriptsPage() {
       const res = await fetch("/api/scripts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, sourceLanguage, targetLanguage }),
+        body: JSON.stringify({
+          url,
+          sourceLanguage,
+          targetLanguage,
+          transcriptionModel,
+        }),
       });
 
       if (!res.ok) {
@@ -168,6 +174,61 @@ export default function ScriptsPage() {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            전사 모델
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label
+              className={`border rounded-md p-3 cursor-pointer transition ${
+                transcriptionModel === "whisper-1"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="radio"
+                  name="transcriptionModel"
+                  value="whisper-1"
+                  checked={transcriptionModel === "whisper-1"}
+                  onChange={(e) => setTranscriptionModel(e.target.value)}
+                />
+                <span className="font-medium text-sm">Whisper</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">
+                ✓ 영상-스크립트 타임라인 연동 가능
+              </p>
+              <p className="text-xs text-gray-500">
+                · 전사 정확도 보통, 환각/타임라인 밀림이 가끔 발생
+              </p>
+            </label>
+            <label
+              className={`border rounded-md p-3 cursor-pointer transition ${
+                transcriptionModel === "gpt-4o-transcribe"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <input
+                  type="radio"
+                  name="transcriptionModel"
+                  value="gpt-4o-transcribe"
+                  checked={transcriptionModel === "gpt-4o-transcribe"}
+                  onChange={(e) => setTranscriptionModel(e.target.value)}
+                />
+                <span className="font-medium text-sm">GPT-4o Transcribe</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">
+                ✓ 전사 정확도 높음, 환각이 적음
+              </p>
+              <p className="text-xs text-gray-500">
+                · 타임라인 미지원 (전체 텍스트 보기 전용)
+              </p>
+            </label>
           </div>
         </div>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}

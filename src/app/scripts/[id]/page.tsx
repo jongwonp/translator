@@ -60,8 +60,10 @@ export default function ScriptDetailPage() {
   const [saving, setSaving] = useState(false);
   const [showWords, setShowWords] = useState(false);
   const [level, setLevel] = useState("intermediate");
+  const [followScript, setFollowScript] = useState(true);
 
   const playerRef = useRef<YT.Player | null>(null);
+  const playerReadyRef = useRef(false);
   const segmentRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -86,6 +88,9 @@ export default function ScriptDetailPage() {
         width: "100%",
         playerVars: { autoplay: 0, modestbranding: 1 },
         events: {
+          onReady: () => {
+            playerReadyRef.current = true;
+          },
           onStateChange: (event: YT.OnStateChangeEvent) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
               startTimeTracking();
@@ -109,18 +114,25 @@ export default function ScriptDetailPage() {
     return () => stopTimeTracking();
   }, [script]);
 
+  const followRef = useRef(followScript);
+  useEffect(() => {
+    followRef.current = followScript;
+  }, [followScript]);
+
   const startTimeTracking = useCallback(() => {
     stopTimeTracking();
     timerRef.current = setInterval(() => {
-      if (!playerRef.current || !script) return;
+      if (!playerRef.current || !script || !playerReadyRef.current) return;
       const currentTime = playerRef.current.getCurrentTime();
       const seg = script.segments.find(
         (s) => currentTime >= s.startTime && currentTime <= s.endTime
       );
       if (seg) {
         setActiveSegment(seg.id);
-        const el = segmentRefs.current.get(seg.id);
-        el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        if (followRef.current) {
+          const el = segmentRefs.current.get(seg.id);
+          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
       }
     }, 500);
   }, [script]);
@@ -133,7 +145,7 @@ export default function ScriptDetailPage() {
   };
 
   const seekTo = (time: number) => {
-    if (playerRef.current) {
+    if (playerRef.current && playerReadyRef.current) {
       playerRef.current.seekTo(time, true);
       playerRef.current.playVideo();
     }
@@ -308,8 +320,18 @@ export default function ScriptDetailPage() {
 
         {/* 스크립트 패널 */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-4 border-b bg-gray-50">
+          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
             <h2 className="font-bold">스크립트</h2>
+            <button
+              onClick={() => setFollowScript((prev) => !prev)}
+              className={`px-3 py-1 text-sm rounded-md ${
+                followScript
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              }`}
+            >
+              자동 스크롤 {followScript ? "ON" : "OFF"}
+            </button>
           </div>
           <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
             {script.segments.map((seg) => (

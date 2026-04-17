@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface VocabWord {
   id: number;
@@ -10,7 +11,7 @@ interface VocabWord {
   example: string;
   language: string;
   createdAt: string;
-  script: { title: string; url: string } | null;
+  script: { id: number; title: string; url: string } | null;
 }
 
 const LANGUAGES = [
@@ -249,7 +250,14 @@ export default function VocabularyPage() {
                 )}
                 {word.script && (
                   <p className="text-xs text-gray-400 mt-1">
-                    출처: {word.script.title}
+                    출처:{" "}
+                    <Link
+                      href={`/scripts/${word.script.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-blue-500 hover:text-blue-700 hover:underline"
+                    >
+                      {word.script.title}
+                    </Link>
                   </p>
                 )}
               </div>

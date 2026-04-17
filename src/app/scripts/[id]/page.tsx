@@ -275,18 +275,6 @@ export default function ScriptDetailPage() {
           {/* 단어 추출 패널 */}
           <div className="mt-4 bg-white rounded-lg shadow-md p-4">
             <div className="flex items-center gap-3 mb-3">
-              <select
-                value={level}
-                onChange={(e) => {
-                  setLevel(e.target.value);
-                  setSelectedWords(new Set());
-                }}
-                className="px-3 py-1.5 border rounded-md text-sm"
-              >
-                <option value="beginner">초급</option>
-                <option value="intermediate">중급</option>
-                <option value="advanced">고급</option>
-              </select>
               <button
                 onClick={handleExtractWords}
                 disabled={extracting}
@@ -294,13 +282,56 @@ export default function ScriptDetailPage() {
               >
                 {extracting ? "추출 중..." : "단어 추출하기"}
               </button>
+              {showWords && extractedWords.length > 0 && (
+                <select
+                  value={level}
+                  onChange={(e) => {
+                    setLevel(e.target.value);
+                    setSelectedWords(new Set());
+                  }}
+                  className="px-3 py-1.5 border rounded-md text-sm"
+                >
+                  <option value="beginner">초급</option>
+                  <option value="intermediate">중급</option>
+                  <option value="advanced">고급</option>
+                </select>
+              )}
             </div>
 
             {showWords && filteredWords.length > 0 && (
               <div>
-                <p className="text-xs text-gray-400 mb-2">
-                  전체 {extractedWords.length}개 중 {filteredWords.length}개 표시
-                </p>
+                {(() => {
+                  const filteredIndices = filteredWords.map((w) =>
+                    extractedWords.indexOf(w)
+                  );
+                  const allSelected = filteredIndices.every((i) =>
+                    selectedWords.has(i)
+                  );
+                  const toggleAll = () => {
+                    setSelectedWords((prev) => {
+                      const next = new Set(prev);
+                      if (allSelected) {
+                        filteredIndices.forEach((i) => next.delete(i));
+                      } else {
+                        filteredIndices.forEach((i) => next.add(i));
+                      }
+                      return next;
+                    });
+                  };
+                  return (
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-gray-400">
+                        전체 {extractedWords.length}개 중 {filteredWords.length}개 표시
+                      </p>
+                      <button
+                        onClick={toggleAll}
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {allSelected ? "전체 해제" : "전체 선택"}
+                      </button>
+                    </div>
+                  );
+                })()}
                 <div className="max-h-60 overflow-y-auto space-y-2 mb-3">
                   {filteredWords.map((word) => {
                     const originalIndex = extractedWords.indexOf(word);

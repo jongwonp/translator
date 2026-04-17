@@ -96,6 +96,21 @@ export default function ScriptDetailPage() {
       .catch(console.error);
   }, [scriptId]);
 
+  // 이전에 추출한 단어 복원
+  useEffect(() => {
+    const saved = localStorage.getItem(`extracted-words-${scriptId}`);
+    if (!saved) return;
+    try {
+      const words = JSON.parse(saved);
+      if (Array.isArray(words) && words.length > 0) {
+        setExtractedWords(words);
+        setShowWords(true);
+      }
+    } catch {
+      localStorage.removeItem(`extracted-words-${scriptId}`);
+    }
+  }, [scriptId]);
+
   // Initialize YouTube player
   useEffect(() => {
     if (!script) return;
@@ -173,6 +188,9 @@ export default function ScriptDetailPage() {
   };
 
   const handleExtractWords = async () => {
+    if (extractedWords.length > 0) {
+      if (!confirm("이미 추출된 단어가 있습니다. 다시 추출하시겠습니까?")) return;
+    }
     setExtracting(true);
     try {
       const res = await fetch(`/api/scripts/${scriptId}/extract-words`, {
@@ -183,7 +201,12 @@ export default function ScriptDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setExtractedWords(data.words);
+        setSelectedWords(new Set());
         setShowWords(true);
+        localStorage.setItem(
+          `extracted-words-${scriptId}`,
+          JSON.stringify(data.words)
+        );
       }
     } catch (error) {
       console.error("Word extraction failed:", error);
@@ -229,6 +252,8 @@ export default function ScriptDetailPage() {
         alert(`${wordsToSave.length}개 단어가 단어장에 저장되었습니다.`);
         setShowWords(false);
         setExtractedWords([]);
+        setSelectedWords(new Set());
+        localStorage.removeItem(`extracted-words-${scriptId}`);
       }
     } catch (error) {
       console.error("Save failed:", error);

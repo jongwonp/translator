@@ -60,6 +60,33 @@ export default function ScriptsPage() {
     return () => clearInterval(interval);
   }, [scripts]);
 
+  const handleRetry = async (scriptId: number) => {
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}/retry`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        fetchScripts();
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDelete = async (scriptId: number) => {
+    if (!confirm("이 스크립트를 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/scripts/${scriptId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setScripts((prev) => prev.filter((s) => s.id !== scriptId));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -189,9 +216,27 @@ export default function ScriptsPage() {
                       {new Date(script.createdAt).toLocaleDateString("ko-KR")}
                     </div>
                   </div>
-                  <span className={`text-sm font-medium ${status.color}`}>
-                    {status.text}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${status.color}`}>
+                      {status.text}
+                    </span>
+                    {script.status === "failed" && (
+                      <>
+                        <button
+                          onClick={() => handleRetry(script.id)}
+                          className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                          재시도
+                        </button>
+                        <button
+                          onClick={() => handleDelete(script.id)}
+                          className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                        >
+                          삭제
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );

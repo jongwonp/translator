@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
-import { getVideoInfo, extractAudio, cleanupFile } from "@/lib/ytdlp";
-import { transcribeAudio } from "@/lib/whisper";
-import { translateSegments } from "@/lib/translate";
+import { getVideoInfo } from "@/lib/ytdlp";
+import { processScript } from "@/lib/process-script";
 
 // POST /api/scripts - 스크립트 생성
 export async function POST(request: NextRequest) {
@@ -58,49 +57,6 @@ export async function POST(request: NextRequest) {
       { error: "스크립트 생성에 실패했습니다." },
       { status: 500 }
     );
-  }
-}
-
-async function processScript(
-  scriptId: number,
-  url: string,
-  sourceLanguage: string,
-  targetLanguage: string
-) {
-  let audioPath: string | null = null;
-
-  try {
-    // 1. 오디오 추출
-    audioPath = await extractAudio(url);
-
-    // 2. 음성 인식
-    const whisperSegments = await transcribeAudio(audioPath, sourceLanguage);
-
-    // 3. 번역
-    const translations = await translateSegments(
-      whisperSegments,
-      sourceLanguage,
-      targetLanguage
-    );
-
-    // 4. DB에 저장
-    await prisma.segment.createMany({
-      data: whisperSegments.map((seg, index) => ({
-        scriptId,
-        startTime: seg.start,
-        endTime: seg.end,
-        originalText: seg.text,
-        translatedText: translations[index] || "",
-        position: index,
-      })),
-    });
-
-    await prisma.script.update({
-      where: { id: scriptId },
-      data: { status: "completed" },
-    });
-  } finally {
-    if (audioPath) cleanupFile(audioPath);
   }
 }
 

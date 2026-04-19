@@ -69,6 +69,12 @@ function getBilibiliId(url: string): string | null {
   return match?.[1] || null;
 }
 
+function splitSentences(text: string): string[] {
+  return (text.match(/[^.。]+[.。]?/g) ?? [])
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export default function ScriptDetailPage() {
   const params = useParams();
   const scriptId = params.id as string;
@@ -525,20 +531,38 @@ export default function ScriptDetailPage() {
                 </div>
               ))
             ) : (
-              <div className="p-4 space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">원문</h3>
-                  <p className="text-sm leading-relaxed">
-                    {script.segments.map((seg) => seg.originalText).join(" ")}
-                  </p>
-                </div>
-                <hr />
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">번역</h3>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    {script.segments.map((seg) => seg.translatedText).join(" ")}
-                  </p>
-                </div>
+              <div className="p-4 space-y-3">
+                {script.segments.map((seg) => {
+                  const originals = splitSentences(seg.originalText);
+                  const translations = seg.translatedText
+                    ? splitSentences(seg.translatedText)
+                    : [];
+                  if (
+                    originals.length > 0 &&
+                    originals.length === translations.length
+                  ) {
+                    return originals.map((orig, i) => (
+                      <div key={`${seg.id}-${i}`}>
+                        <p className="text-sm leading-relaxed">{orig}</p>
+                        <p className="text-sm leading-relaxed text-gray-500 mt-0.5">
+                          {translations[i]}
+                        </p>
+                      </div>
+                    ));
+                  }
+                  return (
+                    <div key={seg.id}>
+                      <p className="text-sm leading-relaxed">
+                        {seg.originalText}
+                      </p>
+                      {seg.translatedText && (
+                        <p className="text-sm leading-relaxed text-gray-500 mt-0.5">
+                          {seg.translatedText}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -84,7 +84,7 @@ async function transcribeWithGpt4o(
 // 문장 분리: 마침표/물음표/느낌표(영문/일문/중문) 또는 줄바꿈 기준
 function splitIntoSentences(text: string): string[] {
   return text
-    .split(/(?<=[.!?。！？])\s+|\n+/)
+    .split(/(?<=[.!?。！？])|\n+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }

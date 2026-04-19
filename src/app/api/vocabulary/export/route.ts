@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     return `${escapeCsv(front)}\t${escapeCsv(back)}`;
   });
 
-  const csv = csvLines.join("\n");
+  const csv = "\uFEFF" + csvLines.join("\n");
 
   return new NextResponse(csv, {
     headers: {

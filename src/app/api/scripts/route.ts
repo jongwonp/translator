@@ -84,6 +84,7 @@ export async function GET() {
       sourceLanguage: true,
       targetLanguage: true,
       status: true,
+      transcriptionModel: true,
       createdAt: true,
     },
   });

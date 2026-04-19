@@ -10,8 +10,14 @@ interface Script {
   sourceLanguage: string;
   targetLanguage: string;
   status: string;
+  transcriptionModel: string;
   createdAt: string;
 }
+
+const modelLabel: Record<string, string> = {
+  "whisper-1": "Whisper",
+  "gpt-4o-transcribe": "GPT-4o Transcribe",
+};
 
 const LANGUAGES = [
   { code: "ja", name: "일본어" },
@@ -267,6 +273,9 @@ export default function ScriptsPage() {
                   <div className="text-sm text-gray-500 mt-1">
                     {langName(script.sourceLanguage)} →{" "}
                     {langName(script.targetLanguage)} |{" "}
+                    {modelLabel[script.transcriptionModel] ||
+                      script.transcriptionModel}{" "}
+                    |{" "}
                     {new Date(script.createdAt).toLocaleDateString("ko-KR")}
                   </div>
                 </div>
@@ -275,20 +284,26 @@ export default function ScriptsPage() {
                     {status.text}
                   </span>
                   {script.status === "failed" && (
-                    <>
-                      <button
-                        onClick={() => handleRetry(script.id)}
-                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                      >
-                        재시도
-                      </button>
-                      <button
-                        onClick={() => handleDelete(script.id)}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
-                      >
-                        삭제
-                      </button>
-                    </>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleRetry(script.id);
+                      }}
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      재시도
+                    </button>
+                  )}
+                  {script.status !== "processing" && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDelete(script.id);
+                      }}
+                      className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                      삭제
+                    </button>
                   )}
                 </div>
               </div>

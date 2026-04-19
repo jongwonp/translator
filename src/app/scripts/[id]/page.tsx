@@ -87,6 +87,7 @@ export default function ScriptDetailPage() {
   const playerRef = useRef<YT.Player | null>(null);
   const playerReadyRef = useRef(false);
   const segmentRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const scriptContainerRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Fetch script data
@@ -179,8 +180,27 @@ export default function ScriptDetailPage() {
       if (seg) {
         setActiveSegment(seg.id);
         if (followRef.current) {
+          const container = scriptContainerRef.current;
           const el = segmentRefs.current.get(seg.id);
-          el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          if (container && el) {
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const relativeTop = elRect.top - containerRect.top;
+            const relativeBottom = relativeTop + elRect.height;
+            if (relativeTop < 0) {
+              container.scrollTo({
+                top: container.scrollTop + relativeTop,
+                behavior: "smooth",
+              });
+            } else if (relativeBottom > container.clientHeight) {
+              container.scrollTo({
+                top:
+                  container.scrollTop +
+                  (relativeBottom - container.clientHeight),
+                behavior: "smooth",
+              });
+            }
+          }
         }
       }
     }, 500);
@@ -477,7 +497,10 @@ export default function ScriptDetailPage() {
               </span>
             )}
           </div>
-          <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div
+            ref={scriptContainerRef}
+            className="max-h-[calc(100vh-200px)] overflow-y-auto"
+          >
             {viewMode === "timeline" ? (
               script.segments.map((seg) => (
                 <div

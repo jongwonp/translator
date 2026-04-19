@@ -259,17 +259,17 @@ export default function ScriptsPage() {
               color: "text-gray-600",
             };
             const card = (
-              <div className="flex items-center justify-between">
-                <div>
-                  <span
-                    className={`text-lg font-medium ${
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`text-lg font-medium truncate ${
                       script.status === "completed"
                         ? "text-blue-600"
                         : "text-gray-700"
                     }`}
                   >
                     {script.title || "제목 없음"}
-                  </span>
+                  </p>
                   <div className="text-sm text-gray-500 mt-1">
                     {langName(script.sourceLanguage)} →{" "}
                     {langName(script.targetLanguage)} |{" "}
@@ -279,7 +279,7 @@ export default function ScriptsPage() {
                     {new Date(script.createdAt).toLocaleDateString("ko-KR")}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className={`text-sm font-medium ${status.color}`}>
                     {status.text}
                   </span>

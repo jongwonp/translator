@@ -1,0 +1,25 @@
+# fly.toml app configuration file generated for translator-twilight-feather-3494 on 2026-04-21T05:02:58+09:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'translator-twilight-feather-3494'
+primary_region = 'nrt'
+
+[build]
+
+[[mounts]]
+  source = 'translator_data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

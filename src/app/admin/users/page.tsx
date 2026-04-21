@@ -20,27 +20,35 @@ const statusLabel: Record<string, { text: string; color: string }> = {
 export default function AdminUsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [myId, setMyId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchUsers = async () => {
-    const res = await fetch("/api/admin/users");
-    if (res.status === 401) {
+    const [usersRes, meRes] = await Promise.all([
+      fetch("/api/admin/users"),
+      fetch("/api/auth/me"),
+    ]);
+    if (usersRes.status === 401) {
       router.push("/login");
       return;
     }
-    if (res.status === 403) {
+    if (usersRes.status === 403) {
       setError("관리자만 접근할 수 있습니다.");
       setLoading(false);
       return;
     }
-    if (!res.ok) {
+    if (!usersRes.ok) {
       setError("사용자 목록을 불러오지 못했습니다.");
       setLoading(false);
       return;
     }
-    const data = await res.json();
+    const data = await usersRes.json();
     setUsers(data.users);
+    if (meRes.ok) {
+      const me = await meRes.json();
+      setMyId(me.id);
+    }
     setLoading(false);
   };
 
@@ -137,6 +145,7 @@ export default function AdminUsersPage() {
           <div className="space-y-3">
             {others.map((user) => {
               const s = statusLabel[user.status];
+              const isSelf = user.id === myId;
               return (
                 <div
                   key={user.id}
@@ -152,7 +161,11 @@ export default function AdminUsersPage() {
                     <span className={`text-sm font-medium ${s.color}`}>
                       {s.text}
                     </span>
-                    {user.status === "approved" ? (
+                    {isSelf ? (
+                      <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
+                        관리자
+                      </span>
+                    ) : user.status === "approved" ? (
                       <button
                         onClick={() => updateStatus(user.id, "rejected")}
                         className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"

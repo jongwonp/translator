@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getAuthUser } from "@/lib/auth";
 
-export default function Home() {
+export default async function Home() {
+  const auth = await getAuthUser();
+  const isLoggedIn = !!auth;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] bg-gray-50">
       <div className="text-center max-w-2xl px-6">
@@ -10,20 +14,36 @@ export default function Home() {
           <br />
           어려운 단어를 추출하여 학습하세요.
         </p>
-        <div className="flex gap-4 justify-center">
-          <Link
-            href="/scripts"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-          >
-            스크립트 생성하기
-          </Link>
-          <Link
-            href="/register"
-            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 font-medium"
-          >
-            회원가입
-          </Link>
-        </div>
+        {isLoggedIn ? (
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/scripts"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+              스크립트 생성하기
+            </Link>
+          </div>
+        ) : (
+          <div>
+            <p className="text-gray-600 mb-4">
+              스크립트 생성과 단어장 기능은 로그인 후 이용할 수 있습니다.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link
+                href="/login"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/register"
+                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 font-medium"
+              >
+                회원가입
+              </Link>
+            </div>
+          </div>
+        )}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h3 className="font-bold mb-2">스크립트 생성</h3>

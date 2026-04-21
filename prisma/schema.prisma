@@ -12,6 +12,7 @@ model User {
   email          String   @unique
   passwordHash   String
   name           String
+  status         String   @default("pending") // pending | approved | rejected
   languageLevels String   @default("{}") // JSON string: {"ja": "intermediate", "en": "advanced"}
   createdAt      DateTime @default(now())
 

@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (user.status === "pending") {
+      return NextResponse.json(
+        { error: "관리자 승인 대기 중입니다." },
+        { status: 403 }
+      );
+    }
+    if (user.status === "rejected") {
+      return NextResponse.json(
+        { error: "가입이 승인되지 않았습니다." },
+        { status: 403 }
+      );
+    }
+
     const token = await createToken(user.id);
 
     const response = NextResponse.json({

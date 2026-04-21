@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdmin } from "@/lib/auth";
 
 export async function GET() {
   const auth = await getAuthUser();
@@ -23,5 +23,6 @@ export async function GET() {
   return NextResponse.json({
     ...user,
     languageLevels: JSON.parse(user.languageLevels),
+    isAdmin: await isAdmin(auth.userId),
   });
 }

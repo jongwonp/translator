@@ -8,6 +8,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  isAdmin: boolean;
 }
 
 export default function Navbar() {
@@ -41,6 +42,11 @@ export default function Navbar() {
             <Link href="/vocabulary" className="hover:text-gray-300">
               단어장
             </Link>
+            {user.isAdmin && (
+              <Link href="/admin/users" className="hover:text-gray-300">
+                관리자
+              </Link>
+            )}
           </>
         )}
       </div>

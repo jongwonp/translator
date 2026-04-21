@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { createToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,20 +26,15 @@ export async function POST(request: NextRequest) {
       data: { email, passwordHash, name },
     });
 
-    const token = await createToken(user.id);
-
-    const response = NextResponse.json(
-      { id: user.id, email: user.email, name: user.name },
+    return NextResponse.json(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        status: user.status,
+      },
       { status: 201 }
     );
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return response;
   } catch {
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다." },

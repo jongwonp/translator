@@ -45,7 +45,7 @@ export default function RegisterPage() {
           <p className="text-gray-700 mb-6">
             관리자 승인 후 로그인할 수 있습니다.
             <br />
-            승인되면 이메일로 알려드리지 않으니, 잠시 후 로그인을 시도해 주세요.
+            승인 시 별도 알림은 제공되지 않으니, 잠시 후 로그인을 시도해 주세요.
           </p>
           <Link
             href="/login"
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              이름
+              닉네임
             </label>
             <input
               type="text"
@@ -77,10 +77,10 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              이메일
+              아이디
             </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

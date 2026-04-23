@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,13 +27,13 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "회원가입에 실패했습니다.");
+        setError(data.error || t.register.failed);
         return;
       }
 
       setSubmitted(true);
     } catch {
-      setError("서버 오류가 발생했습니다.");
+      setError(t.register.serverError);
     } finally {
       setLoading(false);
     }
@@ -41,17 +43,19 @@ export default function RegisterPage() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
         <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md text-center">
-          <h1 className="text-2xl font-bold mb-4">가입 요청 완료</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            {t.register.completeTitle}
+          </h1>
           <p className="text-gray-700 mb-6">
-            관리자 승인 후 로그인할 수 있습니다.
+            {t.register.completeMessage1}
             <br />
-            승인 시 별도 알림은 제공되지 않으니, 잠시 후 로그인을 시도해 주세요.
+            {t.register.completeMessage2}
           </p>
           <Link
             href="/login"
             className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            로그인 페이지로
+            {t.register.goToLogin}
           </Link>
         </div>
       </div>
@@ -61,11 +65,13 @@ export default function RegisterPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
       <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6">회원가입</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">
+          {t.register.title}
+        </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              닉네임
+              {t.register.nickname}
             </label>
             <input
               type="text"
@@ -77,7 +83,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              아이디
+              {t.register.id}
             </label>
             <input
               type="text"
@@ -89,7 +95,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호
+              {t.register.password}
             </label>
             <input
               type="password"
@@ -106,13 +112,13 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "가입 중..." : "회원가입"}
+            {loading ? t.register.registering : t.register.submit}
           </button>
         </form>
         <p className="text-center text-sm text-gray-500 mt-4">
-          이미 계정이 있으신가요?{" "}
+          {t.register.hasAccount}{" "}
           <Link href="/login" className="text-blue-600 hover:underline">
-            로그인
+            {t.register.loginLink}
           </Link>
         </p>
       </div>

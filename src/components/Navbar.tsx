@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "@/i18n/LanguageContext";
+import { Language, LANGUAGES, LANGUAGE_NAMES } from "@/i18n/translations";
 
 interface User {
   id: number;
@@ -14,6 +16,7 @@ interface User {
 export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const { language, setLanguage, t } = useTranslation();
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -38,20 +41,32 @@ export default function Navbar() {
         {user && (
           <>
             <Link href="/scripts" className="hover:text-gray-300">
-              스크립트
+              {t.navbar.scripts}
             </Link>
             <Link href="/vocabulary" className="hover:text-gray-300">
-              단어장
+              {t.navbar.vocabulary}
             </Link>
             {user.isAdmin && (
               <Link href="/admin/users" className="hover:text-gray-300">
-                관리자
+                {t.navbar.admin}
               </Link>
             )}
           </>
         )}
       </div>
       <div className="flex items-center gap-4">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as Language)}
+          className="text-sm bg-gray-800 border border-gray-600 rounded px-2 py-1 hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          aria-label="Change language"
+        >
+          {LANGUAGES.map((lang) => (
+            <option key={lang} value={lang}>
+              {LANGUAGE_NAMES[lang]}
+            </option>
+          ))}
+        </select>
         {user ? (
           <>
             <span className="text-sm text-gray-300">{user.name}</span>
@@ -59,12 +74,12 @@ export default function Navbar() {
               onClick={handleLogout}
               className="text-sm text-gray-400 hover:text-white"
             >
-              로그아웃
+              {t.navbar.logout}
             </button>
           </>
         ) : (
           <Link href="/login" className="text-sm hover:text-gray-300">
-            로그인
+            {t.navbar.login}
           </Link>
         )}
       </div>

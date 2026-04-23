@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface Script {
   id: number;
@@ -19,25 +20,10 @@ const modelLabel: Record<string, string> = {
   "gpt-4o-transcribe": "GPT-4o Transcribe",
 };
 
-const LANGUAGES = [
-  { code: "ja", name: "일본어" },
-  { code: "en", name: "영어" },
-  { code: "zh", name: "중국어" },
-  { code: "ko", name: "한국어" },
-  { code: "es", name: "스페인어" },
-  { code: "fr", name: "프랑스어" },
-];
-
-const langName = (code: string) =>
-  LANGUAGES.find((l) => l.code === code)?.name || code;
-
-const statusLabel: Record<string, { text: string; color: string }> = {
-  processing: { text: "처리 중...", color: "text-yellow-600" },
-  completed: { text: "완료", color: "text-green-600" },
-  failed: { text: "실패", color: "text-red-600" },
-};
+const LANGUAGE_CODES = ["ja", "en", "zh", "ko", "es", "fr"] as const;
 
 export default function ScriptsPage() {
+  const { t, language } = useTranslation();
   const [scripts, setScripts] = useState<Script[]>([]);
   const [url, setUrl] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("ja");
@@ -45,6 +31,15 @@ export default function ScriptsPage() {
   const [transcriptionModel, setTranscriptionModel] = useState("whisper-1");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const langName = (code: string) =>
+    t.contentLanguages[code as keyof typeof t.contentLanguages] || code;
+
+  const statusLabel: Record<string, { text: string; color: string }> = {
+    processing: { text: t.scripts.statusProcessing, color: "text-yellow-600" },
+    completed: { text: t.scripts.statusCompleted, color: "text-green-600" },
+    failed: { text: t.scripts.statusFailed, color: "text-red-600" },
+  };
 
   const fetchScripts = async () => {
     const res = await fetch("/api/scripts");
@@ -81,7 +76,7 @@ export default function ScriptsPage() {
   };
 
   const handleDelete = async (scriptId: number) => {
-    if (!confirm("이 스크립트를 삭제하시겠습니까?")) return;
+    if (!confirm(t.scripts.confirmDelete)) return;
     try {
       const res = await fetch(`/api/scripts/${scriptId}`, {
         method: "DELETE",
@@ -113,14 +108,14 @@ export default function ScriptsPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "스크립트 생성에 실패했습니다.");
+        setError(data.error || t.scripts.createFailed);
         return;
       }
 
       setUrl("");
       fetchScripts();
     } catch {
-      setError("서버 오류가 발생했습니다.");
+      setError(t.scripts.serverError);
     } finally {
       setLoading(false);
     }
@@ -128,7 +123,7 @@ export default function ScriptsPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">스크립트 생성</h1>
+      <h1 className="text-2xl font-bold mb-6">{t.scripts.title}</h1>
 
       {/* 새 스크립트 생성 폼 */}
       <form
@@ -137,13 +132,13 @@ export default function ScriptsPage() {
       >
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            영상 URL
+            {t.scripts.videoUrl}
           </label>
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=... 또는 빌리빌리 URL"
+            placeholder={t.scripts.videoUrlPlaceholder}
             required
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -151,32 +146,32 @@ export default function ScriptsPage() {
         <div className="flex gap-4 mb-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              원본 언어
+              {t.scripts.sourceLanguage}
             </label>
             <select
               value={sourceLanguage}
               onChange={(e) => setSourceLanguage(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.name}
+              {LANGUAGE_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {t.contentLanguages[code]}
                 </option>
               ))}
             </select>
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              번역 언어
+              {t.scripts.targetLanguage}
             </label>
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {LANGUAGES.map((lang) => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.name}
+              {LANGUAGE_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {t.contentLanguages[code]}
                 </option>
               ))}
             </select>
@@ -184,7 +179,7 @@ export default function ScriptsPage() {
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            전사 모델
+            {t.scripts.transcriptionModel}
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
@@ -205,11 +200,9 @@ export default function ScriptsPage() {
                 <span className="font-medium text-sm">Whisper</span>
               </div>
               <p className="text-xs text-gray-600 mt-1">
-                ✓ 영상-스크립트 타임라인 연동 가능
+                {t.scripts.whisperPro}
               </p>
-              <p className="text-xs text-gray-500">
-                · 전사 정확도 보통, 환각/타임라인 밀림이 가끔 발생
-              </p>
+              <p className="text-xs text-gray-500">{t.scripts.whisperCon}</p>
             </label>
             <label
               className={`border rounded-md p-3 cursor-pointer transition ${
@@ -228,12 +221,8 @@ export default function ScriptsPage() {
                 />
                 <span className="font-medium text-sm">GPT-4o Transcribe</span>
               </div>
-              <p className="text-xs text-gray-600 mt-1">
-                ✓ 전사 정확도 높음, 환각이 적음
-              </p>
-              <p className="text-xs text-gray-500">
-                · 타임라인 미지원 (전체 텍스트 보기 전용)
-              </p>
+              <p className="text-xs text-gray-600 mt-1">{t.scripts.gptPro}</p>
+              <p className="text-xs text-gray-500">{t.scripts.gptCon}</p>
             </label>
           </div>
         </div>
@@ -243,14 +232,14 @@ export default function ScriptsPage() {
           disabled={loading}
           className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "처리 요청 중..." : "스크립트 생성"}
+          {loading ? t.scripts.submitting : t.scripts.submit}
         </button>
       </form>
 
       {/* 스크립트 목록 */}
-      <h2 className="text-xl font-bold mb-4">내 스크립트</h2>
+      <h2 className="text-xl font-bold mb-4">{t.scripts.listTitle}</h2>
       {scripts.length === 0 ? (
-        <p className="text-gray-500">아직 생성된 스크립트가 없습니다.</p>
+        <p className="text-gray-500">{t.scripts.empty}</p>
       ) : (
         <div className="space-y-3">
           {scripts.map((script) => {
@@ -268,15 +257,14 @@ export default function ScriptsPage() {
                         : "text-gray-700"
                     }`}
                   >
-                    {script.title || "제목 없음"}
+                    {script.title || t.scripts.noTitle}
                   </p>
                   <div className="text-sm text-gray-500 mt-1">
                     {langName(script.sourceLanguage)} →{" "}
                     {langName(script.targetLanguage)} |{" "}
                     {modelLabel[script.transcriptionModel] ||
                       script.transcriptionModel}{" "}
-                    |{" "}
-                    {new Date(script.createdAt).toLocaleDateString("ko-KR")}
+                    | {new Date(script.createdAt).toLocaleDateString(language)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -291,7 +279,7 @@ export default function ScriptsPage() {
                       }}
                       className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
-                      재시도
+                      {t.scripts.retry}
                     </button>
                   )}
                   {script.status !== "processing" && (
@@ -302,7 +290,7 @@ export default function ScriptsPage() {
                       }}
                       className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
                     >
-                      삭제
+                      {t.scripts.delete}
                     </button>
                   )}
                 </div>

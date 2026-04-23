@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface Segment {
   id: number;
@@ -78,6 +79,7 @@ function splitSentences(text: string): string[] {
 export default function ScriptDetailPage() {
   const params = useParams();
   const scriptId = params.id as string;
+  const { t } = useTranslation();
 
   const [script, setScript] = useState<Script | null>(null);
   const [activeSegment, setActiveSegment] = useState<number | null>(null);
@@ -228,7 +230,7 @@ export default function ScriptDetailPage() {
 
   const handleExtractWords = async () => {
     if (extractedWords.length > 0) {
-      if (!confirm("이미 추출된 단어가 있습니다. 다시 추출하시겠습니까?")) return;
+      if (!confirm(t.scriptDetail.confirmReExtract)) return;
     }
     setExtracting(true);
     try {
@@ -288,7 +290,7 @@ export default function ScriptDetailPage() {
         }),
       });
       if (res.ok) {
-        alert(`${wordsToSave.length}개 단어가 단어장에 저장되었습니다.`);
+        alert(t.scriptDetail.savedAlert(wordsToSave.length));
         setShowWords(false);
         setExtractedWords([]);
         setSelectedWords(new Set());
@@ -304,7 +306,7 @@ export default function ScriptDetailPage() {
   if (!script) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
-        <p className="text-gray-500">스크립트를 불러오는 중...</p>
+        <p className="text-gray-500">{t.scriptDetail.loading}</p>
       </div>
     );
   }
@@ -331,7 +333,7 @@ export default function ScriptDetailPage() {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400">
-                영상을 임베드할 수 없습니다
+                {t.scriptDetail.videoEmbedFailed}
               </div>
             )}
           </div>
@@ -344,7 +346,7 @@ export default function ScriptDetailPage() {
                 disabled={extracting}
                 className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50"
               >
-                {extracting ? "추출 중..." : "단어 추출하기"}
+                {extracting ? t.scriptDetail.extracting : t.scriptDetail.extractWords}
               </button>
               {showWords && extractedWords.length > 0 && (
                 <select
@@ -355,9 +357,9 @@ export default function ScriptDetailPage() {
                   }}
                   className="px-3 py-1.5 border rounded-md text-sm"
                 >
-                  <option value="beginner">초급</option>
-                  <option value="intermediate">중급</option>
-                  <option value="advanced">고급</option>
+                  <option value="beginner">{t.scriptDetail.levelBeginner}</option>
+                  <option value="intermediate">{t.scriptDetail.levelIntermediate}</option>
+                  <option value="advanced">{t.scriptDetail.levelAdvanced}</option>
                 </select>
               )}
             </div>
@@ -385,13 +387,18 @@ export default function ScriptDetailPage() {
                   return (
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs text-gray-400">
-                        전체 {extractedWords.length}개 중 {filteredWords.length}개 표시
+                        {t.scriptDetail.showingFiltered(
+                          extractedWords.length,
+                          filteredWords.length
+                        )}
                       </p>
                       <button
                         onClick={toggleAll}
                         className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
                       >
-                        {allSelected ? "전체 해제" : "전체 선택"}
+                        {allSelected
+                          ? t.scriptDetail.deselectAll
+                          : t.scriptDetail.selectAll}
                       </button>
                     </div>
                   );
@@ -439,8 +446,8 @@ export default function ScriptDetailPage() {
                   className="w-full py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
                 >
                   {saving
-                    ? "저장 중..."
-                    : `선택한 ${selectedWords.size}개 단어 저장하기`}
+                    ? t.scriptDetail.saving
+                    : t.scriptDetail.saveSelected(selectedWords.size)}
                 </button>
               </div>
             )}
@@ -448,8 +455,8 @@ export default function ScriptDetailPage() {
             {showWords && filteredWords.length === 0 && !extracting && (
               <p className="text-sm text-gray-500">
                 {extractedWords.length > 0
-                  ? "현재 레벨에 해당하는 단어가 없습니다. 레벨을 변경해보세요."
-                  : "추출할 새로운 단어가 없습니다."}
+                  ? t.scriptDetail.noWordsAtLevel
+                  : t.scriptDetail.noNewWords}
               </p>
             )}
           </div>
@@ -459,7 +466,7 @@ export default function ScriptDetailPage() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="font-bold">스크립트</h2>
+              <h2 className="font-bold">{t.scriptDetail.scriptHeading}</h2>
               {script.transcriptionModel === "whisper-1" && (
                 <div className="flex text-sm">
                   <button
@@ -470,7 +477,7 @@ export default function ScriptDetailPage() {
                         : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
                     }`}
                   >
-                    타임라인
+                    {t.scriptDetail.timelineView}
                   </button>
                   <button
                     onClick={() => setViewMode("full")}
@@ -480,7 +487,7 @@ export default function ScriptDetailPage() {
                         : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
                     }`}
                   >
-                    전체보기
+                    {t.scriptDetail.fullView}
                   </button>
                 </div>
               )}
@@ -494,12 +501,13 @@ export default function ScriptDetailPage() {
                     : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                 }`}
               >
-                자동 스크롤 {followScript ? "ON" : "OFF"}
+                {t.scriptDetail.autoScrollLabel}{" "}
+                {followScript ? t.scriptDetail.on : t.scriptDetail.off}
               </button>
             )}
             {viewMode === "timeline" && biliId && (
               <span className="text-xs text-gray-400">
-                빌리빌리 영상은 자동 스크롤을 지원하지 않습니다
+                {t.scriptDetail.bilibiliNoAutoScroll}
               </span>
             )}
           </div>

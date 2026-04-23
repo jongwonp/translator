@@ -306,7 +306,7 @@ export default function ScriptDetailPage() {
   if (!script) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
-        <p className="text-gray-500">{t.scriptDetail.loading}</p>
+        <p className="text-stone-500">{t.scriptDetail.loading}</p>
       </div>
     );
   }
@@ -321,7 +321,7 @@ export default function ScriptDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 영상 플레이어 */}
         <div>
-          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+          <div className="aspect-video bg-black rounded-2xl overflow-hidden">
             {ytId ? (
               <div id="yt-player" />
             ) : biliId ? (
@@ -332,19 +332,19 @@ export default function ScriptDetailPage() {
                 allow="autoplay"
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
+              <div className="flex items-center justify-center h-full text-stone-400">
                 {t.scriptDetail.videoEmbedFailed}
               </div>
             )}
           </div>
 
           {/* 단어 추출 패널 */}
-          <div className="mt-4 bg-white rounded-lg shadow-md p-4">
+          <div className="mt-4 bg-white rounded-3xl shadow-sm ring-1 ring-stone-200 p-4">
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={handleExtractWords}
                 disabled={extracting}
-                className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50"
+                className="px-4 py-1.5 bg-emerald-500 text-white text-sm rounded-full hover:bg-emerald-600 disabled:opacity-50"
               >
                 {extracting ? t.scriptDetail.extracting : t.scriptDetail.extractWords}
               </button>
@@ -355,7 +355,7 @@ export default function ScriptDetailPage() {
                     setLevel(e.target.value);
                     setSelectedWords(new Set());
                   }}
-                  className="px-3 py-1.5 border rounded-md text-sm"
+                  className="px-3 py-1.5 bg-white border border-stone-300 rounded-full text-sm"
                 >
                   <option value="beginner">{t.scriptDetail.levelBeginner}</option>
                   <option value="intermediate">{t.scriptDetail.levelIntermediate}</option>
@@ -386,7 +386,7 @@ export default function ScriptDetailPage() {
                   };
                   return (
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-stone-400">
                         {t.scriptDetail.showingFiltered(
                           extractedWords.length,
                           filteredWords.length
@@ -394,7 +394,7 @@ export default function ScriptDetailPage() {
                       </p>
                       <button
                         onClick={toggleAll}
-                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-xs text-sky-600 hover:text-sky-800 hover:underline"
                       >
                         {allSelected
                           ? t.scriptDetail.deselectAll
@@ -409,7 +409,7 @@ export default function ScriptDetailPage() {
                     return (
                       <label
                         key={originalIndex}
-                        className="flex items-start gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                        className="flex items-start gap-2 p-2 rounded-lg hover:bg-stone-50 cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -420,18 +420,18 @@ export default function ScriptDetailPage() {
                         <div className="text-sm">
                           <span className="font-bold">{word.word}</span>
                           {word.reading && (
-                            <span className="text-gray-500 ml-1">
+                            <span className="text-stone-500 ml-1">
                               ({word.reading})
                             </span>
                           )}
-                          <span className="text-gray-700 ml-2">
+                          <span className="text-stone-700 ml-2">
                             {word.meaning}
                           </span>
-                          <span className="text-xs text-gray-400 ml-1">
+                          <span className="text-xs text-stone-400 ml-1">
                             [{word.difficulty}]
                           </span>
                           {word.example && (
-                            <p className="text-gray-400 text-xs mt-0.5">
+                            <p className="text-stone-400 text-xs mt-0.5">
                               {word.example}
                             </p>
                           )}
@@ -443,7 +443,7 @@ export default function ScriptDetailPage() {
                 <button
                   onClick={handleSaveWords}
                   disabled={saving || selectedWords.size === 0}
-                  className="w-full py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full py-2.5 bg-sky-500 text-white text-sm rounded-full font-medium hover:bg-sky-600 disabled:opacity-50"
                 >
                   {saving
                     ? t.scriptDetail.saving
@@ -453,7 +453,7 @@ export default function ScriptDetailPage() {
             )}
 
             {showWords && filteredWords.length === 0 && !extracting && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-stone-500">
                 {extractedWords.length > 0
                   ? t.scriptDetail.noWordsAtLevel
                   : t.scriptDetail.noNewWords}
@@ -463,8 +463,8 @@ export default function ScriptDetailPage() {
         </div>
 
         {/* 스크립트 패널 */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+        <div className="bg-white rounded-3xl shadow-sm ring-1 ring-stone-200 overflow-hidden">
+          <div className="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="font-bold">{t.scriptDetail.scriptHeading}</h2>
               {script.transcriptionModel === "whisper-1" && (
@@ -473,8 +473,8 @@ export default function ScriptDetailPage() {
                     onClick={() => setViewMode("timeline")}
                     className={`px-2 py-0.5 rounded-l-md border ${
                       viewMode === "timeline"
-                        ? "bg-gray-700 text-white border-gray-700"
-                        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        ? "bg-stone-800 text-white border-stone-800"
+                        : "bg-white text-stone-600 border-stone-300 hover:bg-stone-50"
                     }`}
                   >
                     {t.scriptDetail.timelineView}
@@ -483,8 +483,8 @@ export default function ScriptDetailPage() {
                     onClick={() => setViewMode("full")}
                     className={`px-2 py-0.5 rounded-r-md border-t border-r border-b ${
                       viewMode === "full"
-                        ? "bg-gray-700 text-white border-gray-700"
-                        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                        ? "bg-stone-800 text-white border-stone-800"
+                        : "bg-white text-stone-600 border-stone-300 hover:bg-stone-50"
                     }`}
                   >
                     {t.scriptDetail.fullView}
@@ -495,10 +495,10 @@ export default function ScriptDetailPage() {
             {viewMode === "timeline" && ytId && (
               <button
                 onClick={() => setFollowScript((prev) => !prev)}
-                className={`px-3 py-1 text-sm rounded-md ${
+                className={`px-3 py-1 text-sm rounded-full ${
                   followScript
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    ? "bg-sky-500 text-white hover:bg-sky-600"
+                    : "bg-stone-200 text-stone-600 hover:bg-stone-300"
                 }`}
               >
                 {t.scriptDetail.autoScrollLabel}{" "}
@@ -506,7 +506,7 @@ export default function ScriptDetailPage() {
               </button>
             )}
             {viewMode === "timeline" && biliId && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-stone-400">
                 {t.scriptDetail.bilibiliNoAutoScroll}
               </span>
             )}
@@ -523,16 +523,16 @@ export default function ScriptDetailPage() {
                     if (el) segmentRefs.current.set(seg.id, el);
                   }}
                   onClick={() => seekTo(seg.startTime)}
-                  className={`p-3 border-b cursor-pointer hover:bg-blue-50 transition ${
-                    activeSegment === seg.id ? "bg-blue-100 border-l-4 border-l-blue-500" : ""
+                  className={`p-3 border-b border-stone-200 cursor-pointer hover:bg-sky-50 transition ${
+                    activeSegment === seg.id ? "bg-sky-100 border-l-4 border-l-sky-400" : ""
                   }`}
                 >
-                  <span className="text-xs text-gray-400 font-mono">
+                  <span className="text-xs text-stone-400 font-mono">
                     {formatTime(seg.startTime)}
                   </span>
                   <p className="text-sm mt-1">{seg.originalText}</p>
                   {seg.translatedText && (
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <p className="text-sm text-stone-500 mt-0.5">
                       {seg.translatedText}
                     </p>
                   )}
@@ -552,7 +552,7 @@ export default function ScriptDetailPage() {
                     return originals.map((orig, i) => (
                       <div key={`${seg.id}-${i}`}>
                         <p className="text-sm leading-relaxed">{orig}</p>
-                        <p className="text-sm leading-relaxed text-gray-500 mt-0.5">
+                        <p className="text-sm leading-relaxed text-stone-500 mt-0.5">
                           {translations[i]}
                         </p>
                       </div>
@@ -564,7 +564,7 @@ export default function ScriptDetailPage() {
                         {seg.originalText}
                       </p>
                       {seg.translatedText && (
-                        <p className="text-sm leading-relaxed text-gray-500 mt-0.5">
+                        <p className="text-sm leading-relaxed text-stone-500 mt-0.5">
                           {seg.translatedText}
                         </p>
                       )}

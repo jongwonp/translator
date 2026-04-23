@@ -136,7 +136,7 @@ export default function VocabularyPage() {
         <h1 className="text-2xl font-bold">{t.vocabulary.title}</h1>
         <button
           onClick={handleExport}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+          className="px-4 py-2 bg-white border border-stone-300 text-stone-700 rounded-full hover:bg-stone-50 text-sm"
         >
           {t.vocabulary.exportCsv}
         </button>
@@ -152,10 +152,10 @@ export default function VocabularyPage() {
                 setLanguage(code);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 rounded-md text-sm ${
+              className={`px-3 py-1.5 rounded-full text-sm ${
                 language === code
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-sky-500 text-white"
+                  : "bg-white border border-stone-300 text-stone-700 hover:bg-stone-50"
               }`}
             >
               {filterLabel(code)}
@@ -168,11 +168,11 @@ export default function VocabularyPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.vocabulary.searchPlaceholder}
-            className="flex-1 px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-1.5 bg-white border border-stone-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
           />
           <button
             type="submit"
-            className="px-4 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            className="px-4 py-1.5 bg-sky-500 text-white rounded-full text-sm hover:bg-sky-600"
           >
             {t.vocabulary.search}
           </button>
@@ -182,11 +182,11 @@ export default function VocabularyPage() {
       {/* 단어 목록 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-stone-500">
             {t.vocabulary.totalWords(total)}
           </span>
           {words.length > 0 && (
-            <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-sm text-stone-600 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isAllSelected}
@@ -200,7 +200,7 @@ export default function VocabularyPage() {
           {selectedIds.size > 0 && (
             <button
               onClick={handleDeleteSelected}
-              className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+              className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-sm hover:bg-rose-600"
             >
               {t.vocabulary.deleteSelected(selectedIds.size)}
             </button>
@@ -208,7 +208,7 @@ export default function VocabularyPage() {
           {total > 0 && (
             <button
               onClick={handleDeleteAll}
-              className="px-3 py-1.5 bg-gray-100 text-red-600 rounded-md text-sm hover:bg-red-50"
+              className="px-3 py-1.5 bg-white border border-stone-300 text-rose-600 rounded-full text-sm hover:bg-rose-50"
             >
               {t.vocabulary.deleteAll}
             </button>
@@ -217,17 +217,17 @@ export default function VocabularyPage() {
       </div>
 
       {words.length === 0 ? (
-        <p className="text-gray-500 text-center py-12">{t.vocabulary.empty}</p>
+        <p className="text-stone-500 text-center py-12">{t.vocabulary.empty}</p>
       ) : (
         <div className="space-y-2">
           {words.map((word) => (
             <div
               key={word.id}
               onClick={() => toggleSelect(word.id)}
-              className={`bg-white p-4 rounded-lg shadow-sm border flex items-start gap-3 cursor-pointer transition ${
+              className={`bg-white p-4 rounded-2xl shadow-sm ring-1 flex items-start gap-3 cursor-pointer transition ${
                 selectedIds.has(word.id)
-                  ? "border-blue-400 bg-blue-50"
-                  : "hover:border-gray-300"
+                  ? "ring-sky-300 bg-sky-50"
+                  : "ring-stone-200 hover:ring-stone-300"
               }`}
             >
               <input
@@ -241,22 +241,22 @@ export default function VocabularyPage() {
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold">{word.word}</span>
                   {word.reading && (
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-stone-500">
                       ({word.reading})
                     </span>
                   )}
-                  <span className="text-sm text-gray-700">{word.meaning}</span>
+                  <span className="text-sm text-stone-700">{word.meaning}</span>
                 </div>
                 {word.example && (
-                  <p className="text-sm text-gray-400 mt-1">{word.example}</p>
+                  <p className="text-sm text-stone-400 mt-1">{word.example}</p>
                 )}
                 {word.script && (
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-stone-400 mt-1">
                     {t.vocabulary.source}{" "}
                     <Link
                       href={`/scripts/${word.script.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="text-blue-500 hover:text-blue-700 hover:underline"
+                      className="text-sky-600 hover:text-sky-700 hover:underline"
                     >
                       {word.script.title}
                     </Link>
@@ -274,17 +274,17 @@ export default function VocabularyPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 border rounded-md text-sm disabled:opacity-50"
+            className="px-3 py-1.5 bg-white border border-stone-300 rounded-full text-sm disabled:opacity-50"
           >
             {t.vocabulary.prev}
           </button>
-          <span className="px-3 py-1.5 text-sm text-gray-600">
+          <span className="px-3 py-1.5 text-sm text-stone-600">
             {page} / {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 border rounded-md text-sm disabled:opacity-50"
+            className="px-3 py-1.5 bg-white border border-stone-300 rounded-full text-sm disabled:opacity-50"
           >
             {t.vocabulary.next}
           </button>

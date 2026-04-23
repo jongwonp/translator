@@ -21,9 +21,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState("");
 
   const statusLabel: Record<string, { text: string; color: string }> = {
-    pending: { text: t.admin.statusPending, color: "text-yellow-600" },
-    approved: { text: t.admin.statusApproved, color: "text-green-600" },
-    rejected: { text: t.admin.statusRejected, color: "text-red-600" },
+    pending: { text: t.admin.statusPending, color: "text-amber-600" },
+    approved: { text: t.admin.statusApproved, color: "text-emerald-600" },
+    rejected: { text: t.admin.statusRejected, color: "text-rose-600" },
   };
 
   const fetchUsers = async () => {
@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <p className="text-gray-500">{t.admin.loading}</p>
+        <p className="text-stone-500">{t.admin.loading}</p>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <p className="text-red-500">{error}</p>
+        <p className="text-rose-600">{error}</p>
       </div>
     );
   }
@@ -104,31 +104,31 @@ export default function AdminUsersPage() {
           {t.admin.pendingSectionTitle(pending.length)}
         </h2>
         {pending.length === 0 ? (
-          <p className="text-gray-500">{t.admin.pendingEmpty}</p>
+          <p className="text-stone-500">{t.admin.pendingEmpty}</p>
         ) : (
           <div className="space-y-3">
             {pending.map((user) => (
               <div
                 key={user.id}
-                className="bg-white p-4 rounded-lg shadow-sm border flex items-center justify-between gap-4"
+                className="bg-white p-4 rounded-2xl shadow-sm ring-1 ring-stone-200 flex items-center justify-between gap-4"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{user.name}</p>
-                  <p className="text-sm text-gray-500 truncate">{user.email}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-sm text-stone-500 truncate">{user.email}</p>
+                  <p className="text-xs text-stone-400 mt-1">
                     {new Date(user.createdAt).toLocaleString(language)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => updateStatus(user.id, "approved")}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="px-3 py-1 text-sm bg-sky-500 text-white rounded-full hover:bg-sky-600"
                   >
                     {t.admin.approve}
                   </button>
                   <button
                     onClick={() => updateStatus(user.id, "rejected")}
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                    className="px-3 py-1 text-sm bg-rose-500 text-white rounded-full hover:bg-rose-600"
                   >
                     {t.admin.reject}
                   </button>
@@ -142,7 +142,7 @@ export default function AdminUsersPage() {
       <section>
         <h2 className="text-xl font-bold mb-3">{t.admin.allUsersTitle}</h2>
         {others.length === 0 ? (
-          <p className="text-gray-500">{t.admin.allUsersEmpty}</p>
+          <p className="text-stone-500">{t.admin.allUsersEmpty}</p>
         ) : (
           <div className="space-y-3">
             {others.map((user) => {
@@ -151,11 +151,11 @@ export default function AdminUsersPage() {
               return (
                 <div
                   key={user.id}
-                  className="bg-white p-4 rounded-lg shadow-sm border flex items-center justify-between gap-4"
+                  className="bg-white p-4 rounded-2xl shadow-sm ring-1 ring-stone-200 flex items-center justify-between gap-4"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className="text-sm text-stone-500 truncate">
                       {user.email}
                     </p>
                   </div>
@@ -164,20 +164,20 @@ export default function AdminUsersPage() {
                       {s.text}
                     </span>
                     {isSelf ? (
-                      <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md">
+                      <span className="px-2 py-1 text-xs font-medium text-sky-700 bg-sky-100 rounded-full">
                         {t.admin.adminBadge}
                       </span>
                     ) : user.status === "approved" ? (
                       <button
                         onClick={() => updateStatus(user.id, "rejected")}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                        className="px-3 py-1 text-sm bg-rose-500 text-white rounded-full hover:bg-rose-600"
                       >
                         {t.admin.changeToRejected}
                       </button>
                     ) : (
                       <button
                         onClick={() => updateStatus(user.id, "approved")}
-                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        className="px-3 py-1 text-sm bg-sky-500 text-white rounded-full hover:bg-sky-600"
                       >
                         {t.admin.changeToApproved}
                       </button>

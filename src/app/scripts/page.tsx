@@ -38,7 +38,7 @@ export default function ScriptsPage() {
   const statusLabel: Record<string, { text: string; color: string }> = {
     processing: { text: t.scripts.statusProcessing, color: "text-yellow-600" },
     completed: { text: t.scripts.statusCompleted, color: "text-green-600" },
-    failed: { text: t.scripts.statusFailed, color: "text-red-600" },
+    failed: { text: t.scripts.statusFailed, color: "text-rose-600" },
   };
 
   const fetchScripts = async () => {
@@ -128,10 +128,10 @@ export default function ScriptsPage() {
       {/* 새 스크립트 생성 폼 */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md mb-8"
+        className="bg-white p-6 rounded-3xl shadow-sm ring-1 ring-stone-200 mb-8"
       >
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-stone-700 mb-1">
             {t.scripts.videoUrl}
           </label>
           <input
@@ -140,18 +140,18 @@ export default function ScriptsPage() {
             onChange={(e) => setUrl(e.target.value)}
             placeholder={t.scripts.videoUrlPlaceholder}
             required
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300"
           />
         </div>
         <div className="flex gap-4 mb-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">
               {t.scripts.sourceLanguage}
             </label>
             <select
               value={sourceLanguage}
               onChange={(e) => setSourceLanguage(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300"
             >
               {LANGUAGE_CODES.map((code) => (
                 <option key={code} value={code}>
@@ -161,13 +161,13 @@ export default function ScriptsPage() {
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-stone-700 mb-1">
               {t.scripts.targetLanguage}
             </label>
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-300"
             >
               {LANGUAGE_CODES.map((code) => (
                 <option key={code} value={code}>
@@ -178,15 +178,15 @@ export default function ScriptsPage() {
           </div>
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-stone-700 mb-2">
             {t.scripts.transcriptionModel}
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
-              className={`border rounded-md p-3 cursor-pointer transition ${
+              className={`border rounded-2xl p-4 cursor-pointer transition ${
                 transcriptionModel === "whisper-1"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:border-gray-400"
+                  ? "border-sky-400 bg-sky-50"
+                  : "border-stone-300 hover:border-stone-400"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -199,16 +199,16 @@ export default function ScriptsPage() {
                 />
                 <span className="font-medium text-sm">Whisper</span>
               </div>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-stone-600 mt-1">
                 {t.scripts.whisperPro}
               </p>
-              <p className="text-xs text-gray-500">{t.scripts.whisperCon}</p>
+              <p className="text-xs text-stone-500">{t.scripts.whisperCon}</p>
             </label>
             <label
-              className={`border rounded-md p-3 cursor-pointer transition ${
+              className={`border rounded-2xl p-4 cursor-pointer transition ${
                 transcriptionModel === "gpt-4o-transcribe"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300 hover:border-gray-400"
+                  ? "border-sky-400 bg-sky-50"
+                  : "border-stone-300 hover:border-stone-400"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -221,16 +221,16 @@ export default function ScriptsPage() {
                 />
                 <span className="font-medium text-sm">GPT-4o Transcribe</span>
               </div>
-              <p className="text-xs text-gray-600 mt-1">{t.scripts.gptPro}</p>
-              <p className="text-xs text-gray-500">{t.scripts.gptCon}</p>
+              <p className="text-xs text-stone-600 mt-1">{t.scripts.gptPro}</p>
+              <p className="text-xs text-stone-500">{t.scripts.gptCon}</p>
             </label>
           </div>
         </div>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {error && <p className="text-rose-600 text-sm mb-4">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          className="w-full py-2.5 bg-sky-500 text-white rounded-full hover:bg-sky-600 font-medium disabled:opacity-50"
         >
           {loading ? t.scripts.submitting : t.scripts.submit}
         </button>
@@ -239,13 +239,13 @@ export default function ScriptsPage() {
       {/* 스크립트 목록 */}
       <h2 className="text-xl font-bold mb-4">{t.scripts.listTitle}</h2>
       {scripts.length === 0 ? (
-        <p className="text-gray-500">{t.scripts.empty}</p>
+        <p className="text-stone-500">{t.scripts.empty}</p>
       ) : (
         <div className="space-y-3">
           {scripts.map((script) => {
             const status = statusLabel[script.status] || {
               text: script.status,
-              color: "text-gray-600",
+              color: "text-stone-600",
             };
             const card = (
               <div className="flex items-center justify-between gap-4">
@@ -253,13 +253,13 @@ export default function ScriptsPage() {
                   <p
                     className={`text-lg font-medium truncate ${
                       script.status === "completed"
-                        ? "text-blue-600"
-                        : "text-gray-700"
+                        ? "text-sky-600"
+                        : "text-stone-700"
                     }`}
                   >
                     {script.title || t.scripts.noTitle}
                   </p>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-stone-500 mt-1">
                     {langName(script.sourceLanguage)} →{" "}
                     {langName(script.targetLanguage)} |{" "}
                     {modelLabel[script.transcriptionModel] ||
@@ -277,7 +277,7 @@ export default function ScriptsPage() {
                         e.preventDefault();
                         handleRetry(script.id);
                       }}
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="px-3 py-1 text-sm bg-sky-500 text-white rounded-full hover:bg-sky-600"
                     >
                       {t.scripts.retry}
                     </button>
@@ -288,7 +288,7 @@ export default function ScriptsPage() {
                         e.preventDefault();
                         handleDelete(script.id);
                       }}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                      className="px-3 py-1 text-sm bg-rose-500 text-white rounded-full hover:bg-rose-600"
                     >
                       {t.scripts.delete}
                     </button>
@@ -301,14 +301,14 @@ export default function ScriptsPage() {
               <Link
                 key={script.id}
                 href={`/scripts/${script.id}`}
-                className="block bg-white p-4 rounded-lg shadow-sm border hover:border-blue-300 transition cursor-pointer"
+                className="block bg-white p-4 rounded-2xl shadow-sm ring-1 ring-stone-200 hover:ring-sky-300 transition cursor-pointer"
               >
                 {card}
               </Link>
             ) : (
               <div
                 key={script.id}
-                className="bg-white p-4 rounded-lg shadow-sm border"
+                className="bg-white p-4 rounded-2xl shadow-sm ring-1 ring-stone-200"
               >
                 {card}
               </div>

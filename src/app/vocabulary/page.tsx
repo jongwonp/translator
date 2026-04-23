@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface VocabWord {
   id: number;
@@ -14,14 +15,10 @@ interface VocabWord {
   script: { id: number; title: string; url: string } | null;
 }
 
-const LANGUAGES = [
-  { code: "", name: "전체" },
-  { code: "ja", name: "일본어" },
-  { code: "en", name: "영어" },
-  { code: "zh", name: "중국어" },
-];
+const FILTER_CODES = ["", "ja", "en", "zh"] as const;
 
 export default function VocabularyPage() {
+  const { t } = useTranslation();
   const [words, setWords] = useState<VocabWord[]>([]);
   const [total, setTotal] = useState(0);
   const [language, setLanguage] = useState("");
@@ -29,6 +26,13 @@ export default function VocabularyPage() {
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const limit = 30;
+
+  const filterLabel = (code: string) => {
+    if (!code) return t.vocabulary.filterAll;
+    return (
+      t.contentLanguages[code as keyof typeof t.contentLanguages] || code
+    );
+  };
 
   const fetchWords = async () => {
     const params = new URLSearchParams();
@@ -76,7 +80,7 @@ export default function VocabularyPage() {
 
   const handleDeleteSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`선택한 ${selectedIds.size}개 단어를 삭제하시겠습니까?`)) return;
+    if (!confirm(t.vocabulary.confirmDeleteSelected(selectedIds.size))) return;
 
     const res = await fetch("/api/vocabulary", {
       method: "DELETE",
@@ -91,10 +95,8 @@ export default function VocabularyPage() {
 
   const handleDeleteAll = async () => {
     if (total === 0) return;
-    const target = language
-      ? LANGUAGES.find((l) => l.code === language)?.name || language
-      : "전체";
-    if (!confirm(`${target} 단어 ${total}개를 모두 삭제하시겠습니까?`)) return;
+    const target = filterLabel(language);
+    if (!confirm(t.vocabulary.confirmDeleteAll(target, total))) return;
 
     // 전체 ID를 가져와서 삭제
     const params = new URLSearchParams();
@@ -131,32 +133,32 @@ export default function VocabularyPage() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">단어장</h1>
+        <h1 className="text-2xl font-bold">{t.vocabulary.title}</h1>
         <button
           onClick={handleExport}
           className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
         >
-          CSV 내보내기 (Anki)
+          {t.vocabulary.exportCsv}
         </button>
       </div>
 
       {/* 필터 */}
       <div className="flex gap-4 mb-6">
         <div className="flex gap-2">
-          {LANGUAGES.map((lang) => (
+          {FILTER_CODES.map((code) => (
             <button
-              key={lang.code}
+              key={code}
               onClick={() => {
-                setLanguage(lang.code);
+                setLanguage(code);
                 setPage(1);
               }}
               className={`px-3 py-1.5 rounded-md text-sm ${
-                language === lang.code
+                language === code
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              {lang.name}
+              {filterLabel(code)}
             </button>
           ))}
         </div>
@@ -165,14 +167,14 @@ export default function VocabularyPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="단어 또는 뜻 검색..."
+            placeholder={t.vocabulary.searchPlaceholder}
             className="flex-1 px-3 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
             className="px-4 py-1.5 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
           >
-            검색
+            {t.vocabulary.search}
           </button>
         </form>
       </div>
@@ -180,7 +182,9 @@ export default function VocabularyPage() {
       {/* 단어 목록 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">총 {total}개 단어</span>
+          <span className="text-sm text-gray-500">
+            {t.vocabulary.totalWords(total)}
+          </span>
           {words.length > 0 && (
             <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
               <input
@@ -188,7 +192,7 @@ export default function VocabularyPage() {
                 checked={isAllSelected}
                 onChange={toggleSelectAll}
               />
-              전체 선택
+              {t.vocabulary.selectAll}
             </label>
           )}
         </div>
@@ -198,7 +202,7 @@ export default function VocabularyPage() {
               onClick={handleDeleteSelected}
               className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
             >
-              선택 삭제 ({selectedIds.size})
+              {t.vocabulary.deleteSelected(selectedIds.size)}
             </button>
           )}
           {total > 0 && (
@@ -206,16 +210,14 @@ export default function VocabularyPage() {
               onClick={handleDeleteAll}
               className="px-3 py-1.5 bg-gray-100 text-red-600 rounded-md text-sm hover:bg-red-50"
             >
-              전부 삭제
+              {t.vocabulary.deleteAll}
             </button>
           )}
         </div>
       </div>
 
       {words.length === 0 ? (
-        <p className="text-gray-500 text-center py-12">
-          저장된 단어가 없습니다.
-        </p>
+        <p className="text-gray-500 text-center py-12">{t.vocabulary.empty}</p>
       ) : (
         <div className="space-y-2">
           {words.map((word) => (
@@ -250,7 +252,7 @@ export default function VocabularyPage() {
                 )}
                 {word.script && (
                   <p className="text-xs text-gray-400 mt-1">
-                    출처:{" "}
+                    {t.vocabulary.source}{" "}
                     <Link
                       href={`/scripts/${word.script.id}`}
                       onClick={(e) => e.stopPropagation()}
@@ -274,7 +276,7 @@ export default function VocabularyPage() {
             disabled={page === 1}
             className="px-3 py-1.5 border rounded-md text-sm disabled:opacity-50"
           >
-            이전
+            {t.vocabulary.prev}
           </button>
           <span className="px-3 py-1.5 text-sm text-gray-600">
             {page} / {totalPages}
@@ -284,7 +286,7 @@ export default function VocabularyPage() {
             disabled={page === totalPages}
             className="px-3 py-1.5 border rounded-md text-sm disabled:opacity-50"
           >
-            다음
+            {t.vocabulary.next}
           </button>
         </div>
       )}

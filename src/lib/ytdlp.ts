@@ -8,6 +8,14 @@ const execFileAsync = promisify(execFile);
 
 const YTDLP_PATH = process.env.YTDLP_PATH || "yt-dlp";
 
+function commonArgs(): string[] {
+  const args: string[] = ["--remote-components", "ejs:github"];
+  if (process.env.YTDLP_COOKIES_PATH) {
+    args.push("--cookies", process.env.YTDLP_COOKIES_PATH);
+  }
+  return args;
+}
+
 export interface VideoInfo {
   title: string;
   duration: number;
@@ -15,6 +23,7 @@ export interface VideoInfo {
 
 export async function getVideoInfo(url: string): Promise<VideoInfo> {
   const { stdout } = await execFileAsync(YTDLP_PATH, [
+    ...commonArgs(),
     "--dump-json",
     "--no-download",
     url,
@@ -32,6 +41,7 @@ export async function extractAudio(url: string): Promise<string> {
   const outputTemplate = path.join(tmpDir, `${fileId}.%(ext)s`);
 
   await execFileAsync(YTDLP_PATH, [
+    ...commonArgs(),
     "-f",
     "bestaudio",
     "-o",

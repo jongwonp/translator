@@ -1,5 +1,5 @@
 FROM node:22-alpine AS base
-RUN apk add --no-cache python3 py3-pip ffmpeg && \
+RUN apk add --no-cache python3 py3-pip ffmpeg deno && \
     pip3 install --break-system-packages yt-dlp
 
 FROM base AS deps

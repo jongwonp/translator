@@ -110,8 +110,8 @@ export default function ScriptsPage() {
     }
   };
 
-  const handleDelete = async (scriptId: number) => {
-    if (!confirm(t.scripts.confirmDelete)) return;
+  const handleDelete = async (scriptId: number, confirmMessage: string) => {
+    if (!confirm(confirmMessage)) return;
     try {
       const res = await fetch(`/api/scripts/${scriptId}`, {
         method: "DELETE",
@@ -279,6 +279,13 @@ export default function ScriptsPage() {
         <div className="space-y-3">
           {scripts.map((script) => {
             const status = formatStatus(script.status);
+            const inProgress = isInProgress(script.status);
+            const removeLabel = inProgress
+              ? t.scripts.cancel
+              : t.scripts.delete;
+            const removeConfirm = inProgress
+              ? t.scripts.confirmCancel
+              : t.scripts.confirmDelete;
             const card = (
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
@@ -314,17 +321,15 @@ export default function ScriptsPage() {
                       {t.scripts.retry}
                     </button>
                   )}
-                  {!isInProgress(script.status) && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDelete(script.id);
-                      }}
-                      className="px-3 py-1 text-sm bg-rose-500 text-white rounded-full hover:bg-rose-600"
-                    >
-                      {t.scripts.delete}
-                    </button>
-                  )}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(script.id, removeConfirm);
+                    }}
+                    className="px-3 py-1 text-sm bg-rose-500 text-white rounded-full hover:bg-rose-600"
+                  >
+                    {removeLabel}
+                  </button>
                 </div>
               </div>
             );

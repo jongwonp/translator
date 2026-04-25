@@ -64,7 +64,13 @@ export async function processScript(
 
     if (await shouldChunk(audioPath, chunkConfig)) {
       chunks = await splitAudio(audioPath, chunkConfig);
-      segments = await transcribeChunks(chunks, model, sourceLanguage, prompt);
+      segments = await transcribeChunks(
+        scriptId,
+        chunks,
+        model,
+        sourceLanguage,
+        prompt
+      );
     } else {
       const result = await transcribeAudio(
         audioPath,
@@ -83,7 +89,13 @@ export async function processScript(
     const translations = await translateSegments(
       segments,
       sourceLanguage,
-      targetLanguage
+      targetLanguage,
+      async (done, total) => {
+        await prisma.script.update({
+          where: { id: scriptId },
+          data: { status: `translating:${done}/${total}` },
+        });
+      }
     );
 
     await prisma.segment.createMany({
@@ -108,16 +120,30 @@ export async function processScript(
 }
 
 async function transcribeChunks(
+  scriptId: number,
   chunks: AudioChunk[],
   model: string,
   sourceLanguage: string,
   prompt: string | undefined
 ): Promise<WhisperSegment[]> {
-  // 모든 청크를 동시에 전사. 이후 청크 순서대로 dedup·병합.
+  // 모든 청크를 동시에 전사. 청크가 완료될 때마다 진행 카운터 갱신.
+  let done = 0;
+  const total = chunks.length;
   const results = await Promise.all(
-    chunks.map((chunk) =>
-      transcribeAudio(chunk.path, model, sourceLanguage, prompt)
-    )
+    chunks.map(async (chunk) => {
+      const result = await transcribeAudio(
+        chunk.path,
+        model,
+        sourceLanguage,
+        prompt
+      );
+      done++;
+      await prisma.script.update({
+        where: { id: scriptId },
+        data: { status: `transcribing:${done}/${total}` },
+      });
+      return result;
+    })
   );
 
   const merged: WhisperSegment[] = [];

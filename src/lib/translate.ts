@@ -14,7 +14,8 @@ const REFUSAL_MESSAGE = "[번역 거부: 선정적/폭력적 내용으로 판단
 export async function translateSegments(
   segments: { text: string }[],
   sourceLanguage: string,
-  targetLanguage: string
+  targetLanguage: string,
+  onProgress?: (done: number, total: number) => Promise<void>
 ): Promise<string[]> {
   if (sourceLanguage === targetLanguage) {
     return segments.map((s) => s.text);
@@ -25,11 +26,17 @@ export async function translateSegments(
 
   const batchSize = 20;
   const translations: string[] = [];
+  const totalBatches = Math.ceil(segments.length / batchSize);
 
   for (let i = 0; i < segments.length; i += batchSize) {
     const batch = segments.slice(i, i + batchSize);
     const batchTranslations = await translateBatch(batch, sourceName, targetName);
     translations.push(...batchTranslations);
+
+    if (onProgress) {
+      const done = Math.floor(i / batchSize) + 1;
+      await onProgress(done, totalBatches);
+    }
   }
 
   return translations;

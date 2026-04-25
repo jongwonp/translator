@@ -44,8 +44,37 @@ export default function ScriptsPage() {
     failed: { text: t.scripts.statusFailed, color: "text-rose-600" },
   };
 
-  const isInProgress = (status: string) =>
-    status !== "completed" && status !== "failed";
+  // status 문자열에 "transcribing:3/7" 같은 진행 카운터가 인코딩될 수 있어 분리해서 본다.
+  const parseStatus = (
+    status: string
+  ): { stage: string; done?: number; total?: number } => {
+    const colonIdx = status.indexOf(":");
+    if (colonIdx === -1) return { stage: status };
+    const stage = status.slice(0, colonIdx);
+    const [doneStr, totalStr] = status.slice(colonIdx + 1).split("/");
+    const done = parseInt(doneStr);
+    const total = parseInt(totalStr);
+    if (Number.isNaN(done) || Number.isNaN(total)) return { stage };
+    return { stage, done, total };
+  };
+
+  const formatStatus = (status: string) => {
+    const { stage, done, total } = parseStatus(status);
+    const info = statusLabel[stage] || {
+      text: stage,
+      color: "text-stone-600",
+    };
+    const text =
+      done !== undefined && total !== undefined
+        ? `${info.text.replace(/\.{3}$/, "")} (${done}/${total})`
+        : info.text;
+    return { text, color: info.color };
+  };
+
+  const isInProgress = (status: string) => {
+    const { stage } = parseStatus(status);
+    return stage !== "completed" && stage !== "failed";
+  };
 
   const fetchScripts = async () => {
     const res = await fetch("/api/scripts");
@@ -249,10 +278,7 @@ export default function ScriptsPage() {
       ) : (
         <div className="space-y-3">
           {scripts.map((script) => {
-            const status = statusLabel[script.status] || {
-              text: script.status,
-              color: "text-stone-600",
-            };
+            const status = formatStatus(script.status);
             const card = (
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">

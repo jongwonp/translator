@@ -2,14 +2,33 @@ import { prisma } from "@/lib/prisma";
 import { extractAudio, cleanupFile } from "@/lib/ytdlp";
 import { transcribeAudio, type WhisperSegment } from "@/lib/whisper";
 import { translateSegments } from "@/lib/translate";
-import { extractKeywordsFromTitle } from "@/lib/extract-keywords";
+import {
+  extractKeywordsFromTitle,
+  wrapKeywordsForTranscription,
+} from "@/lib/extract-keywords";
 import {
   shouldChunk,
   splitAudio,
   cleanupChunks,
   CHUNK_OVERLAP_SECONDS,
   type AudioChunk,
+  type ChunkConfig,
 } from "@/lib/audio-chunk";
+
+// gpt-4o-transcribe는 출력 토큰 상한 + 긴 입력에서 mid-chunk 누락 가능성이
+// 알려져 있어, 더 잘게(5분) 자르고 호출도 병렬로 보낸다.
+// whisper-1은 세그먼트 단위로 결과를 반환해 출력 제약·누락 위험이 사실상 없음.
+const CHUNK_CONFIGS: Record<string, ChunkConfig> = {
+  "whisper-1": {
+    thresholdBytes: 24 * 1024 * 1024,
+    chunkDurationSec: 1200,
+  },
+  "gpt-4o-transcribe": {
+    thresholdBytes: 24 * 1024 * 1024,
+    thresholdDurationSec: 300,
+    chunkDurationSec: 300,
+  },
+};
 
 export async function processScript(
   scriptId: number,
@@ -31,12 +50,15 @@ export async function processScript(
     const keywords = script?.title
       ? await extractKeywordsFromTitle(script.title, sourceLanguage)
       : "";
-    const prompt = keywords || undefined;
+    const prompt = keywords
+      ? wrapKeywordsForTranscription(keywords, sourceLanguage)
+      : undefined;
 
     let segments: WhisperSegment[];
+    const chunkConfig = CHUNK_CONFIGS[model] ?? CHUNK_CONFIGS["whisper-1"];
 
-    if (shouldChunk(audioPath)) {
-      chunks = await splitAudio(audioPath);
+    if (await shouldChunk(audioPath, chunkConfig)) {
+      chunks = await splitAudio(audioPath, chunkConfig);
       segments = await transcribeChunks(chunks, model, sourceLanguage, prompt);
     } else {
       const result = await transcribeAudio(
@@ -81,16 +103,18 @@ async function transcribeChunks(
   sourceLanguage: string,
   prompt: string | undefined
 ): Promise<WhisperSegment[]> {
+  // 모든 청크를 동시에 전사. 이후 청크 순서대로 dedup·병합.
+  const results = await Promise.all(
+    chunks.map((chunk) =>
+      transcribeAudio(chunk.path, model, sourceLanguage, prompt)
+    )
+  );
+
   const merged: WhisperSegment[] = [];
 
   for (let i = 0; i < chunks.length; i++) {
-    const { path: chunkPath, startOffset } = chunks[i];
-    const { segments } = await transcribeAudio(
-      chunkPath,
-      model,
-      sourceLanguage,
-      prompt
-    );
+    const { startOffset } = chunks[i];
+    const { segments } = results[i];
 
     for (const seg of segments) {
       const adjusted: WhisperSegment = {

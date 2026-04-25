@@ -6,18 +6,32 @@ import fs from "fs";
 
 const execFileAsync = promisify(execFile);
 
-const CHUNK_DURATION_SECONDS = 1200;
-const CHUNK_THRESHOLD_BYTES = 24 * 1024 * 1024;
-
 export const CHUNK_OVERLAP_SECONDS = 3;
+
+export interface ChunkConfig {
+  thresholdBytes?: number;
+  thresholdDurationSec?: number;
+  chunkDurationSec: number;
+}
 
 export interface AudioChunk {
   path: string;
   startOffset: number;
 }
 
-export function shouldChunk(filePath: string): boolean {
-  return fs.statSync(filePath).size > CHUNK_THRESHOLD_BYTES;
+export async function shouldChunk(
+  filePath: string,
+  config: ChunkConfig
+): Promise<boolean> {
+  if (config.thresholdBytes) {
+    const size = fs.statSync(filePath).size;
+    if (size > config.thresholdBytes) return true;
+  }
+  if (config.thresholdDurationSec) {
+    const duration = await getDuration(filePath);
+    if (duration > config.thresholdDurationSec) return true;
+  }
+  return false;
 }
 
 async function getDuration(filePath: string): Promise<number> {
@@ -33,7 +47,10 @@ async function getDuration(filePath: string): Promise<number> {
   return parseFloat(stdout.trim());
 }
 
-export async function splitAudio(filePath: string): Promise<AudioChunk[]> {
+export async function splitAudio(
+  filePath: string,
+  config: ChunkConfig
+): Promise<AudioChunk[]> {
   const duration = await getDuration(filePath);
   const tmpDir = os.tmpdir();
   const ext = path.extname(filePath);
@@ -42,9 +59,9 @@ export async function splitAudio(filePath: string): Promise<AudioChunk[]> {
   const chunks: AudioChunk[] = [];
   let idx = 0;
 
-  for (let start = 0; start < duration; start += CHUNK_DURATION_SECONDS) {
+  for (let start = 0; start < duration; start += config.chunkDurationSec) {
     const chunkDuration = Math.min(
-      CHUNK_DURATION_SECONDS + CHUNK_OVERLAP_SECONDS,
+      config.chunkDurationSec + CHUNK_OVERLAP_SECONDS,
       duration - start
     );
     const chunkPath = path.join(tmpDir, `${base}-${idx}${ext}`);

@@ -1,5 +1,26 @@
 import { openai } from "./openai";
 
+// gpt-4o-transcribe는 prompt 스타일을 흉내내므로, 쉼표 나열을 그대로 주면
+// 전사 결과에도 마침표가 거의 안 붙어 문장 분리가 실패한다.
+// 언어별 자연문으로 감싸 "마침표 있는 문장 스타일"을 유도한다.
+const KEYWORD_WRAPPERS: Record<string, (kw: string) => string> = {
+  ja: (kw) => `この動画の主なキーワード: ${kw}。`,
+  en: (kw) => `Main keywords from this video: ${kw}.`,
+  zh: (kw) => `本视频的主要关键词: ${kw}。`,
+  ko: (kw) => `이 영상의 주요 키워드: ${kw}.`,
+  es: (kw) => `Palabras clave principales del video: ${kw}.`,
+  fr: (kw) => `Mots-clés principaux de la vidéo: ${kw}.`,
+};
+
+export function wrapKeywordsForTranscription(
+  keywords: string,
+  language: string
+): string {
+  const wrapper = KEYWORD_WRAPPERS[language];
+  if (!wrapper) return `${keywords}.`;
+  return wrapper(keywords);
+}
+
 export async function extractKeywordsFromTitle(
   title: string,
   language: string

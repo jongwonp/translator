@@ -34,10 +34,10 @@ export async function POST(
     );
   }
 
-  // 상태를 processing으로 변경
+  // 상태를 다운로드 단계로 초기화
   await prisma.script.update({
     where: { id: scriptId },
-    data: { status: "processing" },
+    data: { status: "downloading" },
   });
 
   // 비동기로 처리
@@ -54,5 +54,5 @@ export async function POST(
     });
   });
 
-  return NextResponse.json({ status: "processing" });
+  return NextResponse.json({ status: "downloading" });
 }

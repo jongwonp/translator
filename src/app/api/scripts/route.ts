@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         title: videoInfo.title,
         sourceLanguage,
         targetLanguage,
-        status: "processing",
+        status: "downloading",
         transcriptionModel: model,
       },
     });
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(
-      { scriptId: script.id, status: "processing", title: videoInfo.title },
+      { scriptId: script.id, status: "downloading", title: videoInfo.title },
       { status: 202 }
     );
   } catch (error) {

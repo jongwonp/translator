@@ -36,10 +36,16 @@ export default function ScriptsPage() {
     t.contentLanguages[code as keyof typeof t.contentLanguages] || code;
 
   const statusLabel: Record<string, { text: string; color: string }> = {
+    downloading: { text: t.scripts.statusDownloading, color: "text-yellow-600" },
+    transcribing: { text: t.scripts.statusTranscribing, color: "text-yellow-600" },
+    translating: { text: t.scripts.statusTranslating, color: "text-yellow-600" },
     processing: { text: t.scripts.statusProcessing, color: "text-yellow-600" },
     completed: { text: t.scripts.statusCompleted, color: "text-green-600" },
     failed: { text: t.scripts.statusFailed, color: "text-rose-600" },
   };
+
+  const isInProgress = (status: string) =>
+    status !== "completed" && status !== "failed";
 
   const fetchScripts = async () => {
     const res = await fetch("/api/scripts");
@@ -55,7 +61,7 @@ export default function ScriptsPage() {
 
   // Poll for processing scripts
   useEffect(() => {
-    const hasProcessing = scripts.some((s) => s.status === "processing");
+    const hasProcessing = scripts.some((s) => isInProgress(s.status));
     if (!hasProcessing) return;
 
     const interval = setInterval(fetchScripts, 3000);
@@ -282,7 +288,7 @@ export default function ScriptsPage() {
                       {t.scripts.retry}
                     </button>
                   )}
-                  {script.status !== "processing" && (
+                  {!isInProgress(script.status) && (
                     <button
                       onClick={(e) => {
                         e.preventDefault();

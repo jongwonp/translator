@@ -27,7 +27,7 @@ model Script {
   title               String   @default("")
   sourceLanguage      String
   targetLanguage      String
-  status              String   @default("processing") // processing | completed | failed
+  status              String   @default("processing") // downloading | transcribing | translating | completed | failed (코드에서 명시적으로 설정)
   transcriptionModel  String   @default("whisper-1") // whisper-1 | gpt-4o-transcribe
   createdAt           DateTime @default(now())
 

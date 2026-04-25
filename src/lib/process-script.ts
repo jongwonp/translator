@@ -57,6 +57,11 @@ export async function processScript(
     let segments: WhisperSegment[];
     const chunkConfig = CHUNK_CONFIGS[model] ?? CHUNK_CONFIGS["whisper-1"];
 
+    await prisma.script.update({
+      where: { id: scriptId },
+      data: { status: "transcribing" },
+    });
+
     if (await shouldChunk(audioPath, chunkConfig)) {
       chunks = await splitAudio(audioPath, chunkConfig);
       segments = await transcribeChunks(chunks, model, sourceLanguage, prompt);
@@ -69,6 +74,11 @@ export async function processScript(
       );
       segments = result.segments;
     }
+
+    await prisma.script.update({
+      where: { id: scriptId },
+      data: { status: "translating" },
+    });
 
     const translations = await translateSegments(
       segments,
